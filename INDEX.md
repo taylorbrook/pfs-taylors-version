@@ -30,6 +30,7 @@ The system removes traditional barriers to plugin development by handling all te
 ### For New Users
 
 **Start here:** Read in this order:
+
 1. `architecture/00-PHILOSOPHY.md` - Core principle: discovery through play
 2. `architecture/01-executive-summary.md` - High-level system goals
 3. `architecture/02-core-abstractions.md` - 5 fundamental concepts
@@ -41,6 +42,7 @@ The system removes traditional barriers to plugin development by handling all te
 ### For Implementers
 
 **Critical reading path:**
+
 1. `architecture/04-component-architecture.md` - How components interact
 2. `architecture/05-routing-architecture.md` - Slash commands → skills → subagents
 3. `procedures/skills/plugin-workflow.md` - Complete 7-stage implementation
@@ -52,6 +54,7 @@ The system removes traditional barriers to plugin development by handling all te
 ### For Extenders
 
 **Hook into the system:**
+
 1. `architecture/10-extension-architecture.md` - Adding skills, hooks, MCP servers
 2. `architecture/13-error-handling-recovery.md` - Hook validation patterns (lines 427-461)
 3. `procedures/agents/troubleshooter.md` - Example specialized agent
@@ -137,12 +140,7 @@ plugin-freedom-system/
 │       ├── common-problems.md        # Troubleshooting
 │       └── EXAMPLES-GUIDE.md         # Working code samples
 │
-└── prompts/                          # Reusable automation workflows (5)
-    ├── 001-analyze-architecture-inconsistencies.md
-    ├── 002-architecture-final-audit.md
-    ├── 003-analyze-architecture-procedure-mapping.md
-    ├── 004-implement-architecture-cross-references.md
-    └── 005-create-documentation-index.md # ← Created this INDEX.md
+└──
 ```
 
 ---
@@ -152,60 +150,69 @@ plugin-freedom-system/
 ### Phase 1: Understanding (Why and What)
 
 **00-PHILOSOPHY.md** 🎯
-*Core principle: discovery through play, not documentation*
+_Core principle: discovery through play, not documentation_
+
 - Progressive disclosure philosophy
 - Risk-free exploration via Claude Code checkpointing
 - Interactive decision menus at every workflow checkpoint
 - **Related:** `procedures/core/interactive-decision-system.md`, `procedures/core/checkpoint-system.md`
 
 **01-executive-summary.md** 🎯
-*High-level architecture goals and key decisions*
+_High-level architecture goals and key decisions_
+
 - Subagent architecture for fresh context per stage
 - Contract-driven development (parameter-spec + architecture)
 - Hybrid validation (hooks + validator subagent)
 - **Related:** `procedures/commands/implement.md`, `procedures/skills/plugin-workflow.md`
 
 **02-core-abstractions.md** 🎯
-*5 fundamental concepts that define the system*
+_5 fundamental concepts that define the system_
+
 1. Navigation Index (CLAUDE.md) - tells Claude WHERE to find components
 2. Skills (Workflows) - high-level coordination, dispatcher pattern
 3. Subagents - autonomous implementation in fresh contexts
 4. Contracts (Specifications) - single source of truth (parameter-spec.md, architecture.md)
 5. Hybrid Validation - fast hooks (2s) + deep validator (60s)
+
 - **Related:** `procedures/skills/plugin-workflow.md`, `procedures/agents/troubleshooter.md`
 
 ### Phase 2: System Architecture (How Components Work)
 
 **04-component-architecture.md** 📚
-*Component relationships, interfaces, and data flow*
+_Component relationships, interfaces, and data flow_
+
 - Skill → Subagent → Validator flow
 - CLAUDE.md as navigation index (not orchestrator)
 - Hook-based quality gates (6 hooks used)
 - **Related:** `procedures/commands/`, `procedures/skills/`, `procedures/agents/`
 
 **05-routing-architecture.md** 📚
-*Slash command entry points and decision routing*
+_Slash command entry points and decision routing_
+
 - `/dream`, `/implement`, `/improve`, `/continue` commands
 - Interactive decision system at checkpoints (inline numbered menus)
 - Vagueness detection and option generation
 - **Related:** `procedures/core/interactive-decision-system.md`, all `procedures/commands/`
 
 **06-state-architecture.md** 📚
-*4 state types: lifecycle, session, version, logs*
+_4 state types: lifecycle, session, version, logs_
+
 - PLUGINS.md registry (💡→🚧→✅→📦 state machine)
 - .continue-here.md handoff files for resumption
 - CHANGELOG.md version management (Keep a Changelog format)
 - **Related:** `procedures/skills/context-resume.md`, `procedures/skills/plugin-improve.md`
 
 **07-communication-architecture.md** 📚
-*Inter-component messaging and subagent reports*
+_Inter-component messaging and subagent reports_
+
 - Dispatcher → Subagent: Task tool invocation with complete specs
 - Subagent → Dispatcher: JSON report parsing
 - Error propagation: always surface with options
 - **Related:** All subagent procedures (expected JSON schemas)
 
 **08-data-flow-diagrams.md** 📚
-*Visual representation of request → result flows*
+_Visual representation of request → result flows_
+
 - Stage execution sequences
 - State transitions
 - Error path flows
@@ -214,28 +221,32 @@ plugin-freedom-system/
 ### Phase 3: System Design Details
 
 **09-file-system-design.md** 📚
-*Directory structure and file naming conventions*
+_Directory structure and file naming conventions_
+
 - .claude/ (skills, commands, agents, MCP)
 - plugins/[Name]/.ideas/ (contracts, mockups, specs)
 - logs/, backups/ (versioned artifacts)
 - **Related:** `procedures/skills/context-resume.md`
 
 **10-extension-architecture.md** 📚
-*Hooks, skills, MCP servers, extensibility*
+_Hooks, skills, MCP servers, extensibility_
+
 - 6 hooks used: PostToolUse, UserPromptSubmit, Stop, SubagentStop, PreCompact, SessionStart
 - Skill YAML frontmatter structure
 - MCP server integration patterns
 - **Related:** `architecture/13-error-handling-recovery.md:427-461` (hook patterns)
 
 **11-build-automation-architecture.md** 🎯
-*7-phase build pipeline and failure protocol*
+_7-phase build pipeline and failure protocol_
+
 - build-and-install.sh (validation → build → install → verify)
 - 4-option failure protocol (Investigate/Show/Wait/Other)
 - Parallel VST3 + AU builds
 - **Related:** `procedures/scripts/build-and-install.md`, `procedures/skills/build-automation.md`
 
 **12-webview-integration-design.md** 🎯 ⚠️
-*WebView UI system - CRITICAL IMPLEMENTATION REFERENCE*
+_WebView UI system - CRITICAL IMPLEMENTATION REFERENCE_
+
 - HTML → UI architecture (no translation layer)
 - Two-phase design (yaml mockup → finalization)
 - Parameter binding via relay pattern
@@ -247,7 +258,8 @@ plugin-freedom-system/
   - `procedures/webview/common-problems.md` - troubleshooting
 
 **13-error-handling-recovery.md** 📚
-*Error taxonomy and recovery workflows*
+_Error taxonomy and recovery workflows_
+
 - 7 error types (contract, build, runtime, validation, communication, session, data)
 - Hook validation patterns (lines 427-461)
 - Conditional hook execution (graceful skip pattern)
@@ -256,20 +268,23 @@ plugin-freedom-system/
 ### Phase 4: Decision Context (Why Things Are This Way)
 
 **14-design-decisions.md** 📚
-*Rationale for 7 major architectural choices*
+_Rationale for 7 major architectural choices_
+
 - Dispatcher pattern vs monolithic skills (fresh context per stage)
 - Slash commands vs conversational routing (deterministic, discoverable)
 - Interactive menus vs yes/no prompts (unlimited options, progressive disclosure)
 - **Related:** `procedures/core/interactive-decision-system.md`
 
 **15-migration-notes.md** 📚
-*v1 → v2 changes and backward compatibility*
+_v1 → v2 changes and backward compatibility_
+
 - What changed: dispatcher pattern, contracts, hybrid validation
 - What stayed: JUCE foundation, WebView approach, file structure
 - Migration workflow considerations
 
 **03-model-selection-extended-thinking-strategy.md** 📚
-*When to use Opus/Sonnet/Haiku and extended thinking*
+_When to use Opus/Sonnet/Haiku and extended thinking_
+
 - dsp-agent uses Opus (complex algorithms)
 - validator uses Sonnet (semantic reasoning)
 - troubleshooter Level 3-4 uses extended thinking
@@ -277,7 +292,8 @@ plugin-freedom-system/
 ### Phase 5: Implementation Planning
 
 **16-implementation-roadmap.md** 🚀
-*6-phase plan (7-9 days total)*
+_6-phase plan (7-9 days total)_
+
 - Phase 0: Foundation (0.5 days)
 - Phase 1: Core sub-agent architecture (1-2 days)
 - Phase 2: Workflow orchestration (2 days)
@@ -287,7 +303,8 @@ plugin-freedom-system/
 - **Related:** `procedures/skills/`, `procedures/commands/`, `procedures/core/`
 
 **17-testing-strategy.md** 📚
-*3-tier testing pyramid and acceptance criteria*
+_3-tier testing pyramid and acceptance criteria_
+
 - System tests for E2E workflows (primary validation)
 - Integration tests for component interactions
 - Unit tests for critical logic
@@ -296,7 +313,8 @@ plugin-freedom-system/
 ### Phase 6: Quality Verification
 
 **FINAL-AUDIT-REPORT.md** ✅
-*Complete architecture audit - 0 critical issues*
+_Complete architecture audit - 0 critical issues_
+
 - All blocking items resolved
 - 18/18 components fully specified
 - Terminology consistent (all "subagent", no hyphens)
@@ -313,29 +331,31 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 
 ### Commands - Slash Command Entry Points
 
-| Command | Purpose | Routes To |
-|---------|---------|-----------|
-| **`commands/continue.md`** | Resume paused workflows from `.continue-here.md` | context-resume skill |
-| **`commands/doc-fix.md`** | Update documentation based on learnings | documentation maintenance |
-| **`commands/dream.md`** 🚀 | Creative plugin ideation with AI brainstorming | plugin-ideation skill |
-| **`commands/implement.md`** 🎯 | Full 0-6 stage plugin implementation | plugin-workflow skill |
-| **`commands/improve.md`** | Iterative enhancement (v1.0 → v1.1) | plugin-improve skill |
-| **`commands/install-plugin.md`** | Copy built plugins to system folders | build-automation |
-| **`commands/show-standalone.md`** | Generate standalone HTML mockup preview | ui-mockup skill |
-| **`commands/test.md`** | Run validation suite (build + pluginval) | plugin-testing skill |
-| **`commands/troubleshoot-juce.md`** | Fix JUCE compilation/runtime errors | troubleshooter agent |
+| Command                             | Purpose                                          | Routes To                 |
+| ----------------------------------- | ------------------------------------------------ | ------------------------- |
+| **`commands/continue.md`**          | Resume paused workflows from `.continue-here.md` | context-resume skill      |
+| **`commands/doc-fix.md`**           | Update documentation based on learnings          | documentation maintenance |
+| **`commands/dream.md`** 🚀          | Creative plugin ideation with AI brainstorming   | plugin-ideation skill     |
+| **`commands/implement.md`** 🎯      | Full 0-6 stage plugin implementation             | plugin-workflow skill     |
+| **`commands/improve.md`**           | Iterative enhancement (v1.0 → v1.1)              | plugin-improve skill      |
+| **`commands/install-plugin.md`**    | Copy built plugins to system folders             | build-automation          |
+| **`commands/show-standalone.md`**   | Generate standalone HTML mockup preview          | ui-mockup skill           |
+| **`commands/test.md`**              | Run validation suite (build + pluginval)         | plugin-testing skill      |
+| **`commands/troubleshoot-juce.md`** | Fix JUCE compilation/runtime errors              | troubleshooter agent      |
 
 ### Core - Foundational System Patterns
 
 **`core/interactive-decision-system.md`** 🎯
-*Numbered option menus at every checkpoint*
+_Numbered option menus at every checkpoint_
+
 - Progressive feature discovery (users learn by exploring)
 - No artificial option limit (dynamic lists: 11 plugins, 8 aesthetics)
 - Risk-free exploration via Claude Code checkpointing (Esc+Esc)
 - Examples: "What's next?" after stages, "How to start?" for mockups
 
 **`core/checkpoint-system.md`** 🎯
-*Three checkpoint types: hard, soft, decision*
+_Three checkpoint types: hard, soft, decision_
+
 - `.continue-here.md` handoff files preserve context
 - Enables pause/resume workflows
 - Git commits align with checkpoints for rollback safety
@@ -344,79 +364,93 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 ### Skills - Automation Capabilities
 
 **`skills/build-automation.md`** 🎯
-*CMake builds, error detection, retry logic*
+_CMake builds, error detection, retry logic_
+
 - Wraps build-and-install.sh script
 - 4-option failure protocol (Investigate/Show/Wait/Other)
 - Parallel VST3 + AU builds
 
 **`skills/context-resume.md`**
-*Parse `.continue-here.md`, reconstruct state, continue workflows*
+_Parse `.continue-here.md`, reconstruct state, continue workflows_
+
 - Resumes from any checkpoint (hard, soft, decision)
 - Preserves conversation context and next actions
 
 **`skills/deep-research.md`**
-*Multi-agent parallel investigation*
+_Multi-agent parallel investigation_
+
 - JUCE docs, forums, GitHub issue search
 - Graduated research protocol (simple → complex)
 
 **`skills/design-sync.md`**
-*Validate mockup ↔ creative brief consistency*
+_Validate mockup ↔ creative brief consistency_
+
 - Ensures UI design matches original vision
 - Catches design drift before implementation
 
 **`skills/juce-foundation.md`** 🎯
-*JUCE 8 patterns, WebView setup, CMakeLists.txt structure*
+_JUCE 8 patterns, WebView setup, CMakeLists.txt structure_
+
 - Real-time safety rules
 - Modern JUCE API usage
 - Stage 2 foundation patterns
 
 **`skills/plugin-ideation.md`** 🚀
-*Creative brief generation*
+_Creative brief generation_
+
 - Adaptive brainstorming (follows user's creative process)
 - Generates creative-brief.md (concept, target user, core features, DSP, UI vision)
 
 **`skills/plugin-improve.md`**
-*Versioning (v1.0 → v1.1), changelog management, regression testing*
+_Versioning (v1.0 → v1.1), changelog management, regression testing_
+
 - Creates backups before changes
 - Updates CHANGELOG.md (Keep a Changelog format)
 - Prevents touching plugins in 🚧 state
 
 **`skills/plugin-lifecycle.md`**
-*7-stage workflow orchestration (Stages 0-6)*
+_7-stage workflow orchestration (Stages 0-6)_
+
 - Complexity detection and phasing
 - State machine management (💡→🚧→✅→📦)
 
 **`skills/plugin-testing.md`**
-*Build validation, pluginval integration, DAW loading tests*
+_Build validation, pluginval integration, DAW loading tests_
+
 - Stage 6 validation
 - Automated stability checks
 
 **`skills/plugin-workflow.md`** 🎯
-*Stage 1-6 implementation details*
+_Stage 1-6 implementation details_
+
 - Complete workflow specification
 - File structure, JUCE conventions
 - Subagent dispatch patterns
 
 **`skills/troubleshooting-docs.md`**
-*Capture resolutions, organize by plugin/symptom*
+_Capture resolutions, organize by plugin/symptom_
+
 - Builds searchable knowledge base
 - Documents proven solutions
 
 **`skills/ui-mockup.md`** 🎯
-*HTML/CSS mockup generation*
+_HTML/CSS mockup generation_
+
 - yaml design definition → test.html
 - Browser testing, design iteration
 - Two-phase finalization
 
 **`skills/ui-template-library.md`**
-*Save/load design templates, reuse across plugins*
+_Save/load design templates, reuse across plugins_
+
 - Aesthetic library system
 - Design consistency across projects
 
 ### Scripts - Low-Level Automation
 
 **`scripts/build-and-install.md`** 🎯
-*Complete CMake build + system installation*
+_Complete CMake build + system installation_
+
 - Handles VST3/AU formats
 - Build directory setup
 - Copying to ~/Library/Audio/Plug-Ins/
@@ -428,44 +462,48 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 **Core Documentation Series:**
 
 **`webview/README.md`** 🎯 ⚠️
-*START HERE - Master index, learning paths, problem lookup*
+_START HERE - Master index, learning paths, problem lookup_
+
 - Complete documentation series overview
 - Quick start guide
 - Code examples directory
 
 **`webview/01-overview.md`**
-*Architecture, concepts, platform backends, when to use WebView*
+_Architecture, concepts, platform backends, when to use WebView_
 
 **`webview/02-project-setup.md`**
-*CMake config, Windows WebView2, platform setup, build process*
+_CMake config, Windows WebView2, platform setup, build process_
 
 **`webview/03-communication-patterns.md`** 🎯
-*C++ ↔ JavaScript communication*
+_C++ ↔ JavaScript communication_
+
 - Resource provider pattern (serves files from C++ memory)
 - Native function registration
 - Event-based updates
 
 **`webview/04-parameter-binding.md`** 🎯 ⚠️
-*Relay pattern for parameters*
+_Relay pattern for parameters_
+
 - WebSliderRelay, WebToggleButtonRelay, WebComboBoxRelay
 - Initialization order: `AudioParameter ↔ ParameterAttachment ↔ Relay ↔ JavaScript ↔ HTML`
 
 **`webview/05-audio-visualization.md`**
-*Real-time meters, FFT, Canvas rendering, performance optimization*
+_Real-time meters, FFT, Canvas rendering, performance optimization_
 
 **`webview/06-development-workflow.md`**
-*Hot reloading, dev server, debugging, DAW testing*
+_Hot reloading, dev server, debugging, DAW testing_
 
 **`webview/07-distribution.md`**
-*Embedding files, zip+binary data, installers, runtime requirements*
+_Embedding files, zip+binary data, installers, runtime requirements_
 
 **Support Documentation:**
 
 **`webview/QUICK-REFERENCE.md`** 📚
-*Cheat sheet: CMake snippets, communication patterns, parameter binding templates*
+_Cheat sheet: CMake snippets, communication patterns, parameter binding templates_
 
 **`webview/best-practices.md`** 🎯 ⚠️
-*CRITICAL PATTERNS - Read before implementing*
+_CRITICAL PATTERNS - Read before implementing_
+
 - **Member declaration order** (prevents release build crashes):
   ```cpp
   // CORRECT ORDER (destroyed in reverse):
@@ -477,7 +515,8 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 - WebView options (`.withKeepPageLoadedWhenBrowserIsHidden()` for FL Studio)
 
 **`webview/common-problems.md`** 🎯
-*Troubleshooting guide*
+_Troubleshooting guide_
+
 - Blank screens (resource provider, native integration)
 - Parameter sync issues
 - FL Studio Tab key problem
@@ -485,9 +524,10 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 - Ableton 12 Escape key crash (unresolved as of Jan 2025)
 
 **`webview/EXAMPLES-GUIDE.md`**
-*Working code samples with explanations*
+_Working code samples with explanations_
 
 **API Migration Notes:**
+
 - ❌ JUCE 7: Data URLs (`data:text/html,...`)
 - ✅ JUCE 8: Resource provider pattern (mandatory)
 - ❌ JUCE 7: File URLs (`file:///path`)
@@ -496,32 +536,34 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 ### Examples - Reference Implementations
 
 **`examples/plugin-ideation.md`**
-*Example creative brief: "Vintage Tape Saturation"*
+_Example creative brief: "Vintage Tape Saturation"_
+
 - Shows expected format and level of detail
 
 **`examples/plugin-improve.md`**
-*Example improvement workflow: "TapeDelay v1.0 → v1.1"*
+_Example improvement workflow: "TapeDelay v1.0 → v1.1"_
+
 - Version management patterns
 
 ---
 
 ## Cross-Reference Matrix
 
-*For complete architecture ↔ procedure mappings, see `cross-reference-map.md` (87 total mappings)*
+_For complete architecture ↔ procedure mappings, see `cross-reference-map.md` (87 total mappings)_
 
 ### Key Mappings (Most Critical)
 
-| Architecture Concept | Primary Procedure | Why Critical |
-|---------------------|------------------|--------------|
-| **Progressive disclosure philosophy** | `procedures/core/interactive-decision-system.md` | Defines how users discover features |
-| **7-stage workflow** | `procedures/skills/plugin-workflow.md` | Complete implementation specification |
-| **WebView integration** | `procedures/webview/README.md` + 14 files | Prevents using outdated patterns |
-| **Parameter relay pattern** | `procedures/webview/04-parameter-binding.md` | Core UI → DSP connection |
-| **Build pipeline** | `procedures/scripts/build-and-install.md` | Automation script specification |
-| **4-option failure protocol** | `procedures/skills/build-automation.md` | Error recovery pattern |
-| **Checkpoint system** | `procedures/core/checkpoint-system.md` | Enables pause/resume workflows |
-| **Contract prerequisites** | Enforced in `procedures/skills/plugin-workflow.md` Stage 1 | Prevents implementation drift |
-| **Troubleshooting protocol** | `procedures/agents/troubleshooter.md` | Multi-level investigation |
+| Architecture Concept                  | Primary Procedure                                          | Why Critical                          |
+| ------------------------------------- | ---------------------------------------------------------- | ------------------------------------- |
+| **Progressive disclosure philosophy** | `procedures/core/interactive-decision-system.md`           | Defines how users discover features   |
+| **7-stage workflow**                  | `procedures/skills/plugin-workflow.md`                     | Complete implementation specification |
+| **WebView integration**               | `procedures/webview/README.md` + 14 files                  | Prevents using outdated patterns      |
+| **Parameter relay pattern**           | `procedures/webview/04-parameter-binding.md`               | Core UI → DSP connection              |
+| **Build pipeline**                    | `procedures/scripts/build-and-install.md`                  | Automation script specification       |
+| **4-option failure protocol**         | `procedures/skills/build-automation.md`                    | Error recovery pattern                |
+| **Checkpoint system**                 | `procedures/core/checkpoint-system.md`                     | Enables pause/resume workflows        |
+| **Contract prerequisites**            | Enforced in `procedures/skills/plugin-workflow.md` Stage 1 | Prevents implementation drift         |
+| **Troubleshooting protocol**          | `procedures/agents/troubleshooter.md`                      | Multi-level investigation             |
 
 ### Architecture → Procedures Quick Reference
 
@@ -538,81 +580,95 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 ## Core Concepts Glossary
 
 **Checkpoint**
-*Hard, soft, or decision point in workflow*
+_Hard, soft, or decision point in workflow_
+
 - **Hard checkpoint:** Stage boundaries (1→2, 2→3, etc.)
 - **Soft checkpoint:** Phase boundaries within stages
 - **Decision checkpoint:** User chooses next action (interactive menu)
 - Enabled by Claude Code's Esc+Esc feature (rollback to any checkpoint)
 
 **Contract**
-*Single source of truth specification*
+_Single source of truth specification_
+
 - parameter-spec.md (audio parameters), architecture.md (plugin design), creative-brief.md (vision)
 - **Enforced:** Stage 1 Planning blocks if parameter-spec.md or architecture.md missing
 - **Terminology:** "specification" = file, "contract" = binding agreement
 
 **Dispatcher Pattern**
-*Main skill coordinates, subagents implement*
+_Main skill coordinates, subagents implement_
+
 - Each subagent runs in fresh context (prevents context accumulation)
 - plugin-workflow skill dispatches foundation-agent, shell-agent, dsp-agent, gui-agent
 - Eliminates v1's "Frankenstein feeling" from multi-session accumulation
 
 **Hybrid Validation**
-*Two-layer error detection*
+_Two-layer error detection_
+
 - **Layer 1 (Hooks):** Fast (2s), deterministic pattern matching, blocks on failure
 - **Layer 2 (Validator Subagent):** Slow (60s), semantic reasoning, advisory
 - Hooks catch simple errors fast, validator catches semantic issues
 
 **Interactive Decision System**
-*Numbered option menus at every checkpoint*
+_Numbered option menus at every checkpoint_
+
 - Progressive disclosure: features discovered through exploration, not documentation
 - No artificial 4-option limit (supports dynamic lists: 11 plugins, 8 aesthetics)
 - Risk-free exploration via checkpointing (Esc+Esc)
 
 **Navigation Index (CLAUDE.md)**
-*Tells Claude WHERE to find components (not an orchestrator)*
+_Tells Claude WHERE to find components (not an orchestrator)_
+
 - Contains: component locations, system topology, key principles (~200 words)
 - Does NOT contain: detailed workflows, validation logic, command behavior
 
 **Progressive Disclosure**
-*Core philosophy: learn by doing, not reading*
+_Core philosophy: learn by doing, not reading_
+
 - Discovery mechanisms: slash command autocomplete, contextual option menus, checkpointing
 - Result: Users learn features organically without documentation
 
 **Relay Pattern (WebView)**
-*Parameter binding for web UIs*
+_Parameter binding for web UIs_
+
 - AudioParameter ↔ ParameterAttachment ↔ Relay ↔ JavaScript State ↔ HTML Element
 - Three types: WebSliderRelay, WebToggleButtonRelay, WebComboBoxRelay
 - ⚠️ **Critical:** Member declaration order prevents release build crashes
 
 **Resource Provider (WebView)**
-*Serves files from C++ memory (like local web server)*
+_Serves files from C++ memory (like local web server)_
+
 - JUCE 8 requirement (replaces JUCE 7's data URLs)
 - `.withResourceProvider([this](const auto& url) { return getResource(url); })`
 
 **Slash Command**
-*Deterministic, discoverable entry point*
+_Deterministic, discoverable entry point_
+
 - `/dream` (ideation), `/implement` (build), `/improve` (enhance), `/continue` (resume)
 - Autocomplete discovery (type "/" to see all workflows)
 - Commands contain instructions → route to skills
 
 **State Machine (Plugin Lifecycle)**
-*PLUGINS.md registry tracks status*
+_PLUGINS.md registry tracks status_
+
 - 💡 Ideated → 🚧 Stage N → ✅ Working → 📦 Installed
 - **Critical rule:** If status is 🚧, ONLY plugin-workflow can modify (not plugin-improve)
 
 **Subagent**
-*Autonomous implementation in fresh context*
+_Autonomous implementation in fresh context_
+
 - Spawned via Task tool with complete specifications
 - Returns structured JSON reports
 - Types: foundation-agent, shell-agent, dsp-agent, gui-agent, validator, troubleshooter
 
 **Two-Phase UI Design**
-*Mockup → finalization workflow*
+_Mockup → finalization workflow_
+
 - Phase 1: yaml design definition → test.html mockup (iterate in browser)
 - Phase 2: test.html → 7 finalized files (index.html, ui.css, ui.js, relay setup, attachments)
 
 **WebView Integration**
-*HTML/CSS interfaces instead of JUCE GUI*
+_HTML/CSS interfaces instead of JUCE GUI_
+
 - Modern aesthetics, rapid prototyping, hot reload during development
 - JUCE 8 patterns (resource provider, relay pattern, native integration)
 - ⚠️ **Must follow:** `procedures/webview/` proven patterns (outdated examples exist online)
@@ -621,44 +677,51 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 
 ## Implementation Roadmap
 
-*For detailed plan, see `architecture/16-implementation-roadmap.md`*
+_For detailed plan, see `architecture/16-implementation-roadmap.md`_
 
 ### 6-Phase Plan (7-9 days total)
 
 **Phase 0: Foundation (0.5 days)**
+
 - Setup: JUCE 8 library, Claude Code environment, directory structure
 - Verify: CMake builds, pluginval runs, basic JUCE project compiles
 
 **Phase 1: Core Sub-Agent Architecture (1-2 days)** 🎯
+
 - Create: foundation-agent, shell-agent, dsp-agent, gui-agent specifications
 - Implement: JSON report schemas, Task tool invocation patterns
 - Test: Each agent completes its scope independently
 - **Critical:** Fresh context per agent (dispatcher pattern core)
 
 **Phase 2: Workflow Orchestration (2 days)** 🎯
+
 - Implement: plugin-workflow skill (Stages 1-6)
 - Create: PLUGINS.md state machine, .continue-here.md handoff files
 - Test: Complete flow from ideation → working plugin
 - **Critical:** Contract enforcement (parameter-spec.md + architecture.md)
 
 **Phase 3: Build + Validation (1.5 days)** 🎯
+
 - Implement: build-and-install.sh script, build-automation skill
 - Create: 6 hooks (PostToolUse, UserPromptSubmit, Stop, SubagentStop, PreCompact, SessionStart)
 - Test: Build failures trigger 4-option protocol, hooks catch quality issues
 - **Critical:** Hybrid validation (fast hooks + deep validator)
 
 **Phase 4: Enhanced Features (1-2 days)**
+
 - Implement: plugin-improve skill, context-resume skill, troubleshooter agent
 - Create: CHANGELOG.md management, backup system, troubleshooting knowledge base
 - Test: Version improvements (v1.0 → v1.1), pause/resume workflows
 
 **Phase 5: Interactive Decision System (1 day)** 🎯
+
 - Implement: Numbered option menus at all checkpoints
 - Create: Option generation logic, vagueness detection
 - Test: Progressive feature discovery, risk-free exploration
 - **Critical:** Foundation for "no documentation needed" goal
 
 **Phase 6: Polish + Documentation (during all phases)**
+
 - Document: Troubleshooting resolutions, hook patterns, WebView gotchas
 - Refine: Error messages, option descriptions, checkpoint handoff format
 
@@ -716,6 +779,7 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 ### Reading Order Recommendations
 
 **First-time learner** (understanding the system):
+
 1. `architecture/00-PHILOSOPHY.md`
 2. `architecture/01-executive-summary.md`
 3. `architecture/02-core-abstractions.md`
@@ -723,6 +787,7 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 5. Try: `/dream [plugin idea]` and explore interactively
 
 **Implementer** (building the system):
+
 1. `architecture/FINAL-AUDIT-REPORT.md` (verify readiness)
 2. `architecture/16-implementation-roadmap.md` (6-phase plan)
 3. `architecture/04-component-architecture.md` (component interfaces)
@@ -731,12 +796,14 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 6. `cross-reference-map.md` (find specific mappings)
 
 **Extender** (adding features):
+
 1. `architecture/10-extension-architecture.md` (extensibility patterns)
 2. `architecture/13-error-handling-recovery.md` (hook patterns)
 3. Example: `procedures/agents/troubleshooter.md` (specialized agent)
 4. Example: All `procedures/skills/*.md` (skill frontmatter)
 
 **Troubleshooter** (fixing issues):
+
 1. `procedures/webview/common-problems.md` (WebView issues)
 2. `procedures/agents/troubleshooter.md` (diagnostic protocol)
 3. `architecture/13-error-handling-recovery.md` (error taxonomy)
@@ -749,12 +816,14 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 ### WebView Implementation ⚠️
 
 **MUST READ before implementing WebView UI:**
+
 - `procedures/webview/README.md` - Master index
 - `procedures/webview/best-practices.md` - Member declaration order (prevents 90% of crashes)
 - `procedures/webview/04-parameter-binding.md` - Relay pattern (only correct way)
 - `procedures/webview/common-problems.md` - Troubleshooting guide
 
 **Why critical:** Generic JUCE WebView examples online often use:
+
 - ❌ Outdated JUCE 7 data URL patterns (won't work in JUCE 8)
 - ❌ Wrong member declaration order (causes release build crashes)
 - ❌ Incomplete parameter binding (causes sync issues)
@@ -764,6 +833,7 @@ Diagnostic system that analyzes problems, generates structured reports (symptoms
 ### Contract Enforcement ⚠️
 
 **Stage 1 Planning BLOCKS if missing:**
+
 - parameter-spec.md (audio parameters definition)
 - architecture.md (plugin design specification)
 
@@ -774,6 +844,7 @@ See: `architecture/02-core-abstractions.md` (Contract abstraction)
 ### State Machine Rules ⚠️
 
 **If PLUGINS.md shows status 🚧 (in development):**
+
 - ONLY plugin-workflow can modify the plugin
 - plugin-improve MUST NOT touch it (prevents concurrent modification)
 
@@ -816,58 +887,6 @@ Before creating subagents:
 
 ---
 
-## Prompts Directory
-
-*Reusable automation workflows for documentation quality and integration*
-
-### Documentation Quality Pipeline
-
-**Sequential workflow** (run in order):
-
-**001-analyze-architecture-inconsistencies.md**
-*Initial quality check*
-- Finds: contradictions, terminology issues, interface mismatches
-- Output: `./analyses/architecture-inconsistencies.md`
-- **When:** After major architecture changes
-
-**002-architecture-final-audit.md**
-*Comprehensive verification*
-- Verifies: all previous issues resolved, Claude Code alignment
-- Output: `./architecture/FINAL-AUDIT-REPORT.md`
-- **When:** After implementing fixes from 001
-
-**003-analyze-architecture-procedure-mapping.md**
-*Bridge architecture and procedures*
-- Maps: architecture concepts → procedure files
-- Identifies: gaps (architecture without procedures, procedures without architecture)
-- Output: `./cross-reference-map.md` (87 mappings)
-- **When:** After architecture and procedures exist but are disconnected
-
-**004-implement-architecture-cross-references.md**
-*Update architecture with procedure links*
-- Uses: mapping from 003 to add inline cross-references
-- Adds: "Related Procedures" sections to architecture docs
-- Output: Modified architecture files + `./architecture-updates-summary.md`
-- **When:** After completing mapping analysis (003)
-
-**005-create-documentation-index.md**
-*Create master navigation guide*
-- Builds: INDEX.md at project root (this file)
-- Uses: Task tool with Explore subagent to analyze structure
-- Maps: all architecture, procedures, prompts
-- Output: `./INDEX.md`
-- **When:** After cross-references implemented (creates final documentation map)
-
-### When to Run the Full Pipeline
-
-Run 001 → 002 → 003 → 004 → 005 when:
-- Initial architecture documentation is complete
-- Procedures created but not linked to architecture
-- Before starting implementation (ensures alignment)
-- After major architectural changes (revalidate)
-
----
-
 ## Verification Checklist
 
 Use this to verify INDEX.md completeness:
@@ -900,7 +919,6 @@ Use this to verify INDEX.md completeness:
 **Implementation Status:** Ready for Phase 0-6 (see architecture/16-implementation-roadmap.md)
 
 **Last Updated:** 2025-11-10
-**Generated By:** prompts/005-create-documentation-index.md
 **Maintained By:** Update after major architecture or procedure changes
 
 ---
