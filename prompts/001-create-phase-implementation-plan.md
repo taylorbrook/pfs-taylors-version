@@ -13,19 +13,39 @@ The implementation will be done incrementally with verification at each step.
 
 <requirements>
 1. Read @ROADMAP.md and locate phase $PHASE_NUMBER
-2. Thoroughly analyze what the phase entails, considering all implications
-3. Determine if the phase should be split into sub-phases (e.g., 1a, 1b, 1c):
+2. Validate prerequisites before planning (see <prerequisite_validation>)
+3. Thoroughly analyze what the phase entails, considering all implications
+4. Determine if the phase should be split into sub-phases (e.g., 1a, 1b, 1c):
    - Split if the phase involves multiple distinct components (commands + skills + hooks)
    - Split if implementation would be clearer with logical groupings
    - Split if different parts have different dependencies or complexity levels
-4. For each phase/sub-phase, create a sequential implementation plan that includes:
+5. For each phase/sub-phase, create a sequential implementation plan that includes:
    - Every single task needed to complete that portion
    - The exact order tasks should be completed
    - Dependencies between tasks clearly stated
-5. Reference EVERY relevant file from @architecture/ and @procedures/ directories
-6. Create comprehensive verification criteria mixing automated and manual tests
-7. Ensure the plan leaves nothing to chance - be explicit about every requirement
+6. Reference EVERY relevant file from @architecture/ and @procedures/ directories
+7. Create comprehensive verification criteria mixing automated and manual tests
+8. Ensure the plan leaves nothing to chance - be explicit about every requirement
 </requirements>
+
+<prerequisite_validation>
+Before planning phase $PHASE_NUMBER, verify prerequisite completion:
+
+1. Read @ROADMAP.md and identify the "Prerequisites" section for phase $PHASE_NUMBER
+2. If Phase 0: Skip validation (no prerequisites exist)
+3. If Phase 1+: Check previous phase "Core Deliverables":
+   - For each deliverable, verify file/directory existence using ls or similar
+   - List what EXISTS vs what's EXPECTED
+   - Check for key structural elements (directories, critical files)
+4. Document findings for plan's "Prerequisites Status" section:
+   - ✅ Complete: All deliverables exist
+   - ⚠️ Partial: Some deliverables missing (list them specifically)
+   - ❌ Incomplete: Most/all deliverables missing (list them specifically)
+5. If incomplete/partial: Create highly visible warning section in plan
+6. ALWAYS generate the plan regardless of prerequisite status - user decides when to implement
+
+Note: This uses file existence checks only. Quality validation happens via phase verification checklists.
+</prerequisite_validation>
 
 <research>
 Before creating the plan, you MUST:
@@ -51,6 +71,35 @@ Before creating the plan, you MUST:
 Structure the plan as follows:
 
 # Phase $PHASE_NUMBER Implementation Plan
+
+## Prerequisites Status
+
+[If Phase 0: "No prerequisites for Phase 0."]
+
+[If Phase 1+:]
+**Previous Phase(s) Required:** Phase X[, Phase Y...]
+
+**Deliverables Check:**
+- ✅ `/path/to/deliverable` - EXISTS
+- ❌ `/path/to/missing` - MISSING
+- ⚠️ `/path/to/partial` - PARTIAL (explain what's missing)
+
+**Status:** [Complete / Partial / Incomplete]
+
+[If Partial or Incomplete, add visible warning:]
+
+---
+## ⚠️ PREREQUISITE WARNING ⚠️
+
+**Prerequisites [PARTIAL/INCOMPLETE]. Phase X must be finished first.**
+
+**Missing deliverables:**
+- `specific/path/to/missing/item`
+- `another/missing/deliverable`
+
+**This plan assumes prerequisites will be completed. Do not begin implementation until Phase X verification passes.**
+
+---
 
 ## Phase Overview
 
