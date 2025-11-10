@@ -35,6 +35,73 @@ Generate 5 implementation files only after user approves design:
 
 All files saved to: `plugins/[PluginName]/.ideas/mockups/`
 
+## Phase 0: Check for Aesthetic Library
+
+**Before starting design, check if saved aesthetics exist.**
+
+```bash
+if [ -f .claude/aesthetics/manifest.json ]; then
+    AESTHETIC_COUNT=$(jq '.aesthetics | length' .claude/aesthetics/manifest.json)
+    if [ $AESTHETIC_COUNT -gt 0 ]; then
+        echo "Found $AESTHETIC_COUNT saved aesthetics"
+    fi
+fi
+```
+
+**If aesthetics exist, present decision menu:**
+
+```
+Found $AESTHETIC_COUNT saved aesthetics in library.
+
+How would you like to start the UI design?
+1. Start from aesthetic template - Apply saved visual system
+2. Start from scratch - Create custom design
+3. List all aesthetics - Browse library before deciding
+
+Choose (1-3): _
+```
+
+**Option handling:**
+
+- **Option 1: Start from aesthetic template**
+  - Read manifest: `.claude/aesthetics/manifest.json`
+  - Display available aesthetics with metadata:
+    ```
+    Available aesthetics:
+
+    1. Vintage Hardware (vintage-hardware-001)
+       Vibe: Vintage analog
+       Colors: Orange/cream/brown with paper texture
+       From: TapeAge mockup v2
+
+    2. Modern Minimal Blue (modern-minimal-002)
+       Vibe: Clean, modern
+       Colors: Blue/gray/white with subtle shadows
+       From: EQ4Band mockup v1
+
+    4. None (start from scratch)
+
+    Choose aesthetic: _
+    ```
+  - If user selects aesthetic: Invoke ui-template-library skill with "apply" operation
+  - Skip to Phase 4 with generated mockup from aesthetic
+
+- **Option 2: Start from scratch**
+  - Continue to Phase 1 (load context)
+
+- **Option 3: List all aesthetics**
+  - Invoke ui-template-library skill with "list" operation
+  - Show preview paths
+  - Return to option menu
+
+**If no aesthetics exist:**
+- Skip Phase 0
+- Continue directly to Phase 1
+
+**See:** `references/aesthetic-integration.md` for complete integration details
+
+---
+
 ## Phase 1: Load Context
 
 **Check for existing documentation:**
@@ -193,10 +260,13 @@ Files generated:
 What do you think?
 1. Provide refinements (iterate on design) ← Creates v[N+1]
 2. Finalize and create implementation files (recommended if satisfied)
-3. Test in browser (open v[N]-ui-test.html)
-4. Other
+3. Save as aesthetic template (add to library for reuse)
+4. Finalize AND save aesthetic (do both operations)
+5. Test in browser (open v[N]-ui-test.html)
+6. Validate WebView constraints (run checks)
+7. Other
 
-Choose (1-4): _
+Choose (1-7): _
 ```
 
 **WAIT for user response before continuing.**
@@ -204,9 +274,22 @@ Choose (1-4): _
 **Option handling:**
 - **Option 1**: User gives feedback → Return to Phase 3 with new version number (v2, v3, etc.)
 - **Option 2**: User approves → Proceed to Phase 5-8 (generate remaining 5 files)
-- **Option 3**: Offer to open test HTML in browser for interactive review
-- **Option 4**: Validate WebView constraints (run Phase 4.3 checks again)
-- **Option 5**: Other
+- **Option 3**: Save aesthetic → Invoke ui-template-library skill with "save" operation
+  ```
+  Invoke Skill tool:
+  - skill: "ui-template-library"
+  - prompt: "Save aesthetic from plugins/[PluginName]/.ideas/mockups/v[N]-ui.html"
+  ```
+  After saving, return to decision menu
+- **Option 4**: Save aesthetic first, then proceed to Phase 5-8
+  ```
+  1. Invoke ui-template-library "save" operation
+  2. Wait for confirmation
+  3. Proceed to Phase 5-8 (generate implementation files)
+  ```
+- **Option 5**: Offer to open test HTML in browser for interactive review
+- **Option 6**: Validate WebView constraints (run Phase 4.3 checks again)
+- **Option 7**: Other
 
 **Only execute Phases 5-8 if user chose option 2 (finalize).**
 
