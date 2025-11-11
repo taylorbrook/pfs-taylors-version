@@ -30,20 +30,25 @@ Choose (1-3): _
 **Error:**
 
 ```
-Pluginval not found in system PATH
+Pluginval not found at /Applications/pluginval.app or in PATH
 ```
 
-**Cause:** Pluginval not installed
+**Cause:** Pluginval not installed at expected location
 
 **Solutions:**
 
 ```
 Install options:
-1. Download from: https://github.com/Tracktion/pluginval/releases
-2. Install via Homebrew: brew install pluginval
+1. Via Homebrew: brew install --cask pluginval
+   (Installs to /Applications/pluginval.app - RECOMMENDED)
+2. Manual download: https://github.com/Tracktion/pluginval/releases
+   (Download and place pluginval.app in /Applications/ folder)
 3. Skip pluginval, run automated tests instead
 
-After installing, rerun: /test [PluginName] build
+After installing:
+- Verify installation: ls -la /Applications/pluginval.app/Contents/MacOS/pluginval
+- No need to add to PATH or create symlinks
+- Rerun: /test [PluginName] build
 
 Choose (1-3): _
 ```

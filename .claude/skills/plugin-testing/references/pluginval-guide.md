@@ -2,6 +2,8 @@
 
 **Pluginval:** Third-party validation tool by Tracktion (https://github.com/Tracktion/pluginval)
 
+**macOS Installation:** The standard installation places pluginval at `/Applications/pluginval.app/Contents/MacOS/pluginval`
+
 ## What Pluginval Tests
 
 - **Plugin load/unload**: No crashes, memory leaks, global state
@@ -23,23 +25,35 @@
 ## Running Pluginval
 
 ```bash
-# Step 1: Build Release mode
+# Step 1: Locate pluginval (check .app bundle first, then PATH)
+if [ -x "/Applications/pluginval.app/Contents/MacOS/pluginval" ]; then
+    PLUGINVAL_PATH="/Applications/pluginval.app/Contents/MacOS/pluginval"
+elif command -v pluginval >/dev/null 2>&1; then
+    PLUGINVAL_PATH="pluginval"
+else
+    echo "Error: Pluginval not found"
+    echo "Install via: brew install --cask pluginval"
+    echo "Or download from: https://github.com/Tracktion/pluginval/releases"
+    exit 1
+fi
+
+# Step 2: Build Release mode
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release --parallel
 
-# Step 2: Locate plugin binaries
+# Step 3: Locate plugin binaries
 VST3_PATH="build/plugins/$PLUGIN_NAME/${PLUGIN_NAME}_artefacts/Release/VST3/${PRODUCT_NAME}.vst3"
 AU_PATH="build/plugins/$PLUGIN_NAME/${PLUGIN_NAME}_artefacts/Release/AU/${PRODUCT_NAME}.component"
 
-# Step 3: Run pluginval on VST3
-pluginval --validate "$VST3_PATH" \
+# Step 4: Run pluginval on VST3
+"${PLUGINVAL_PATH}" --validate "$VST3_PATH" \
           --strictness-level 10 \
           --timeout-ms 30000 \
           --verbose
 
-# Step 4: Run pluginval on AU
-pluginval --validate "$AU_PATH" \
+# Step 5: Run pluginval on AU
+"${PLUGINVAL_PATH}" --validate "$AU_PATH" \
           --strictness-level 10 \
           --timeout-ms 30000 \
           --verbose
@@ -120,12 +134,19 @@ Fix: Check getStateInformation() and setStateInformation() include all parameter
 **If pluginval not found:**
 
 ```
-Pluginval not found in system PATH.
+Pluginval not found at /Applications/pluginval.app or in PATH.
 
 Install options:
-1. Download from: https://github.com/Tracktion/pluginval/releases
-2. Install via Homebrew: brew install pluginval
+1. Via Homebrew: brew install --cask pluginval
+   (Installs to /Applications/pluginval.app - RECOMMENDED)
+2. Manual download: https://github.com/Tracktion/pluginval/releases
+   (Place pluginval.app in /Applications/ folder)
 3. Skip pluginval, try automated tests instead
+
+After installation:
+- Verify: ls -la /Applications/pluginval.app/Contents/MacOS/pluginval
+- No need to add to PATH or create symlinks
+- The system detects it automatically at the standard location
 
 Choose (1-3): _
 ```

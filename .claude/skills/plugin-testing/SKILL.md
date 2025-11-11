@@ -148,19 +148,31 @@ Choose (1-5): _
 **Prerequisites check:**
 
 ```bash
-# Check if pluginval is installed
-which pluginval
+# Check for pluginval.app first (standard macOS install), then fall back to PATH
+if [ -x "/Applications/pluginval.app/Contents/MacOS/pluginval" ]; then
+    PLUGINVAL_PATH="/Applications/pluginval.app/Contents/MacOS/pluginval"
+elif command -v pluginval >/dev/null 2>&1; then
+    PLUGINVAL_PATH="pluginval"
+else
+    echo "Pluginval not found"
+    PLUGINVAL_PATH=""
+fi
 ```
 
 **If missing:**
 
 ```
-Pluginval not found in system PATH.
+Pluginval not found.
 
 Install options:
-1. Download from: https://github.com/Tracktion/pluginval/releases
-2. Install via Homebrew: brew install pluginval
+1. Via Homebrew: brew install --cask pluginval
+   (Installs to /Applications/pluginval.app)
+2. Download from: https://github.com/Tracktion/pluginval/releases
+   (Place in /Applications/pluginval.app)
 3. Skip pluginval, try automated tests instead
+
+After installing, pluginval.app should be in /Applications/
+No need to add to PATH or create symlinks.
 
 Choose (1-3): _
 ```
@@ -180,12 +192,12 @@ AU_PATH="build/plugins/$PLUGIN_NAME/${PLUGIN_NAME}_artefacts/Release/AU/${PRODUC
 **Run pluginval:**
 
 ```bash
-pluginval --validate "$VST3_PATH" \
+"${PLUGINVAL_PATH}" --validate "$VST3_PATH" \
           --strictness-level 10 \
           --timeout-ms 30000 \
           --verbose
 
-pluginval --validate "$AU_PATH" \
+"${PLUGINVAL_PATH}" --validate "$AU_PATH" \
           --strictness-level 10 \
           --timeout-ms 30000 \
           --verbose
