@@ -1,70 +1,40 @@
 #pragma once
-
-#include <juce_gui_extra/juce_gui_extra.h>
 #include "PluginProcessor.h"
-
-/**
- * TapeAge Plugin Editor (WebView-based)
- *
- * CRITICAL: Member declaration order prevents release build crashes.
- *
- * Destruction order (reverse of declaration):
- * 1. Attachments destroyed FIRST (stop using relays and WebView)
- * 2. WebView destroyed SECOND (safe, attachments are gone)
- * 3. Relays destroyed LAST (safe, nothing using them)
- */
+#include <juce_gui_extra/juce_gui_extra.h>
 
 class TapeAgeAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                     private juce::Timer  // For VU meter updates
+                                     public juce::Timer
 {
 public:
-    TapeAgeAudioProcessorEditor(TapeAgeAudioProcessor& p);
+    explicit TapeAgeAudioProcessorEditor(TapeAgeAudioProcessor&);
     ~TapeAgeAudioProcessorEditor() override;
 
-    // AudioProcessorEditor overrides
     void paint(juce::Graphics&) override;
     void resized() override;
-
-private:
-    // Timer callback for VU meter updates
     void timerCallback() override;
 
-    /**
-     * Resource provider (JUCE 8 pattern)
-     * Maps URLs to embedded binary data.
-     */
-    std::optional<juce::WebBrowserComponent::Resource> getResource(
-        const juce::String& url
-    );
-
-    // Reference to audio processor
+private:
     TapeAgeAudioProcessor& processorRef;
 
-    // ========================================================================
-    // ⚠️ CRITICAL MEMBER DECLARATION ORDER ⚠️
-    //
+    // ⚠️ CRITICAL: Member declaration order prevents release build crashes
+    // Destruction happens in REVERSE order of declaration
     // Order: Relays → WebView → Attachments
-    // DO NOT REORDER without understanding destructor sequence!
-    // ========================================================================
 
-    // ------------------------------------------------------------------------
-    // 1️⃣ RELAYS FIRST (created first, destroyed last)
-    // ------------------------------------------------------------------------
-    std::unique_ptr<juce::WebSliderRelay> driveRelay;
-    std::unique_ptr<juce::WebSliderRelay> ageRelay;
-    std::unique_ptr<juce::WebSliderRelay> mixRelay;
+    // 1️⃣ RELAYS FIRST (no dependencies)
+    juce::WebSliderRelay driveRelay;
+    juce::WebSliderRelay ageRelay;
+    juce::WebSliderRelay mixRelay;
 
-    // ------------------------------------------------------------------------
-    // 2️⃣ WEBVIEW SECOND
-    // ------------------------------------------------------------------------
-    std::unique_ptr<juce::WebBrowserComponent> webView;
+    // 2️⃣ WEBVIEW SECOND (depends on relays via withOptionsFrom)
+    juce::WebBrowserComponent webView;
 
-    // ------------------------------------------------------------------------
-    // 3️⃣ PARAMETER ATTACHMENTS LAST (created last, destroyed first)
-    // ------------------------------------------------------------------------
-    std::unique_ptr<juce::WebSliderParameterAttachment> driveAttachment;
-    std::unique_ptr<juce::WebSliderParameterAttachment> ageAttachment;
-    std::unique_ptr<juce::WebSliderParameterAttachment> mixAttachment;
+    // 3️⃣ ATTACHMENTS LAST (depend on both relays and parameters)
+    juce::WebSliderParameterAttachment driveAttachment;
+    juce::WebSliderParameterAttachment ageAttachment;
+    juce::WebSliderParameterAttachment mixAttachment;
+
+    // Helper for resource serving
+    std::optional<juce::WebBrowserComponent::Resource> getResource(const juce::String& url);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TapeAgeAudioProcessorEditor)
 };

@@ -4,10 +4,9 @@ cmake_minimum_required(VERSION 3.15)
 juce_add_plugin(TapeAge
     COMPANY_NAME "YourCompany"
     PLUGIN_MANUFACTURER_CODE Manu
-    PLUGIN_CODE Tape
+    PLUGIN_CODE Plug
     FORMATS VST3 AU Standalone
     PRODUCT_NAME "TAPE AGE"
-    NEEDS_WEB_BROWSER TRUE
 )
 
 # Source files (minimal for Stage 2)
@@ -23,9 +22,17 @@ target_include_directories(TapeAge
         Source
 )
 
+# WebView UI Resources
+juce_add_binary_data(TapeAge_UIResources
+    SOURCES
+        Source/ui/public/index.html
+        Source/ui/public/js/juce/index.js
+)
+
 # Required JUCE modules
 target_link_libraries(TapeAge
     PRIVATE
+        TapeAge_UIResources
         juce::juce_audio_basics
         juce::juce_audio_devices
         juce::juce_audio_formats
@@ -43,18 +50,6 @@ target_link_libraries(TapeAge
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
-)
-
-# WebView UI Resources
-juce_add_binary_data(TapeAge_UIResources
-    SOURCES
-        Source/ui/public/index.html
-        Source/ui/public/js/juce/index.js
-)
-
-target_link_libraries(TapeAge
-    PRIVATE
-        TapeAge_UIResources
 )
 
 # Compile definitions

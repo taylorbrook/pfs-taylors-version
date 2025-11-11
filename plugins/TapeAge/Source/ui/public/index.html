@@ -584,28 +584,57 @@
         }
 
         // ====================================================================
-        // VU METER UPDATE (Optional - can be driven by C++ timer)
+        // VU METER UPDATE (Phase 5.2)
         // ====================================================================
 
-        // Placeholder for VU meter updates from C++
-        // In production, this would be driven by real-time audio level data
+        const vuNeedle = document.getElementById("vuNeedle");
+        let currentNeedleAngle = -45;  // Start at minimum position
+        let targetNeedleAngle = -45;
 
         function updateVUMeter(dbLevel) {
+            // VU meter scale: -20dB to +3dB (matching visual markings)
             const minDB = -20;
             const maxDB = 3;
-            const normalizedLevel = (dbLevel - minDB) / (maxDB - minDB);
-            const needleAngle = -45 + (normalizedLevel * 90);
 
-            const needle = document.getElementById("vuNeedle");
-            needle.style.transform = `translateX(-50%) rotate(${needleAngle}deg)`;
+            // Clamp dB level to scale range
+            const clampedDB = Math.max(minDB, Math.min(maxDB, dbLevel));
+
+            // Normalize to 0-1 range
+            const normalizedLevel = (clampedDB - minDB) / (maxDB - minDB);
+
+            // Convert to needle angle: -45deg (left) to +45deg (right)
+            targetNeedleAngle = -45 + (normalizedLevel * 90);
         }
 
-        // Example: Listen for meter updates from C++
-        // window.__JUCE__.backend.addEventListener("meterUpdate", (data) => {
-        //     requestAnimationFrame(() => {
-        //         updateVUMeter(data.level);
-        //     });
-        // });
+        // Smooth needle animation (ballistic meter behavior)
+        function animateVUMeter() {
+            // Lerp current angle toward target with decay
+            // Fast attack, slower decay (authentic VU meter ballistics)
+            const attackSpeed = 0.4;  // Fast rise
+            const decaySpeed = 0.15;   // Slow fall
+
+            if (currentNeedleAngle < targetNeedleAngle) {
+                // Attack: Fast rise
+                currentNeedleAngle += (targetNeedleAngle - currentNeedleAngle) * attackSpeed;
+            } else {
+                // Decay: Slow fall
+                currentNeedleAngle += (targetNeedleAngle - currentNeedleAngle) * decaySpeed;
+            }
+
+            // Apply transform
+            vuNeedle.style.transform = `translateX(-50%) rotate(${currentNeedleAngle}deg)`;
+
+            // Continue animation loop
+            requestAnimationFrame(animateVUMeter);
+        }
+
+        // Start animation loop
+        animateVUMeter();
+
+        // Listen for meter updates from C++ (30 FPS from timer)
+        window.__JUCE__.backend.addEventListener("updateVUMeter", (dbLevel) => {
+            updateVUMeter(dbLevel);
+        });
 
         // ====================================================================
         // INITIALIZATION COMPLETE

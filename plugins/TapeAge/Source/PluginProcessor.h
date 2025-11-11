@@ -30,8 +30,11 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    // APVTS (public for editor access)
+    // Public access to parameters (needed by PluginEditor for WebView attachments)
     juce::AudioProcessorValueTreeState parameters;
+
+    // Phase 5.2: Output Level Metering (public for PluginEditor access)
+    std::atomic<float> outputLevel { -100.0f };  // Peak level in dB (initialized to silence)
 
 private:
     // DSP Components (declared BEFORE parameters for initialization order)

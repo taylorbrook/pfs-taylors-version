@@ -336,6 +336,20 @@ void TapeAgeAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce:
     // Phase 4.4: Mix dry/wet signals AFTER all processing
     // Equal-power crossfade with latency compensation
     dryWetMixer.mixWetSamples(block);
+
+    // Phase 5.2: Calculate peak level for VU meter (AFTER all processing)
+    float peakLevel = 0.0f;
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        float channelPeak = buffer.getMagnitude(channel, 0, numSamples);
+        peakLevel = std::max(peakLevel, channelPeak);
+    }
+
+    // Convert to dB and store atomically (clamp to -100dB minimum to avoid log(0))
+    float peakDb = peakLevel > 0.00001f
+        ? juce::Decibels::gainToDecibels(peakLevel)
+        : -100.0f;
+    outputLevel.store(peakDb, std::memory_order_relaxed);
 }
 
 juce::AudioProcessorEditor* TapeAgeAudioProcessor::createEditor()

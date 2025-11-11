@@ -85,7 +85,7 @@ Minimalist gain, pan, and DJ-style filter utility plugin with three knobs for vo
 
 ### TapeAge
 
-**Status:** 🚧 **Stage 4**
+**Status:** 🚧 **Stage 5**
 **Created:** 2025-11-10
 **Type:** Audio Effect
 
@@ -99,7 +99,7 @@ Vintage tape saturator with warm saturation and musical degradation (wow/flutter
 
 **DSP:** Warm harmonic saturation with controllable tape artifacts (wow, flutter, dropout, noise). Musical degradation even at maximum settings. 2x oversampling for aliasing reduction.
 
-**GUI:** Medium rectangle, vintage VU meter (output peak), 3 brass knobs horizontal, creamy beige textured background, burnt orange/brown accents, clean sans-serif all-caps typography.
+**GUI:** Medium rectangle, vintage VU meter (output peak), 3 brass knobs horizontal, creamy beige textured background, burnt orange/brown accents, clean sans-serif all-caps typography. WebView UI (500x450px).
 
 **Lifecycle Timeline:**
 - **2025-11-10:** Creative brief completed
@@ -108,6 +108,7 @@ Vintage tape saturator with warm saturation and musical degradation (wow/flutter
 - **2025-11-10 (Stage 2):** Foundation complete - build system operational
 - **2025-11-10 (Stage 3):** Shell complete - 3 parameters implemented
 - **2025-11-10 (Stage 4):** DSP complete - all 4 phases (saturation, wow/flutter, dropout/noise, dry/wet)
+- **2025-11-10 (Stage 5):** GUI complete - WebView integrated with 3 parameter bindings and VU meter animation
 
 **Known Issues:**
 - None
