@@ -10,7 +10,6 @@ allowed-tools:
 preconditions:
   - Plugin status must be ✅ Working OR 📦 Installed
   - Plugin must NOT be 🚧 In Development
-model: sonnet
 ---
 
 # plugin-improve Skill
@@ -131,6 +130,7 @@ Question 4:
 ```
 
 **After receiving answers:**
+
 1. Merge with initial request
 2. Proceed to decision gate
 
@@ -493,6 +493,7 @@ Invoking build-automation skill to build and install updated plugin...
 ```
 
 build-automation will:
+
 - Run build script: `scripts/build-and-install.sh [PluginName]` (full build)
 - Build VST3 and AU formats in parallel
 - Install to system folders
@@ -500,11 +501,13 @@ build-automation will:
 - Verify installation
 
 If build succeeds:
+
 - build-automation displays success message with installation paths
 - Returns control to plugin-improve
 - Proceed to Phase 5, step 2 (Run tests)
 
 If build fails:
+
 - build-automation presents 4-option failure protocol:
   1. Investigate (troubleshooter agent)
   2. Show build log
@@ -572,14 +575,14 @@ cd backups/[Plugin]/v[baseline]/
 
 ```typescript
 interface RegressionReport {
-  baseline_version: string
-  current_version: string
-  tests_run: number
-  baseline_passing: number
-  current_passing: number
-  new_failures: TestCase[]  // Regressions!
-  new_passes: TestCase[]    // Fixed bugs
-  unchanged: number
+  baseline_version: string;
+  current_version: string;
+  tests_run: number;
+  baseline_passing: number;
+  current_passing: number;
+  new_failures: TestCase[]; // Regressions!
+  new_passes: TestCase[]; // Fixed bugs
+  unchanged: number;
 }
 ```
 
