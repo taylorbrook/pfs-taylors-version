@@ -21,17 +21,17 @@ private:
     // Order: Relays → WebView → Attachments
 
     // 1️⃣ RELAYS FIRST (no dependencies)
-    juce::WebSliderRelay driveRelay;
-    juce::WebSliderRelay ageRelay;
-    juce::WebSliderRelay mixRelay;
+    std::unique_ptr<juce::WebSliderRelay> driveRelay;
+    std::unique_ptr<juce::WebSliderRelay> ageRelay;
+    std::unique_ptr<juce::WebSliderRelay> mixRelay;
 
     // 2️⃣ WEBVIEW SECOND (depends on relays via withOptionsFrom)
-    juce::WebBrowserComponent webView;
+    std::unique_ptr<juce::WebBrowserComponent> webView;
 
     // 3️⃣ ATTACHMENTS LAST (depend on both relays and parameters)
-    juce::WebSliderParameterAttachment driveAttachment;
-    juce::WebSliderParameterAttachment ageAttachment;
-    juce::WebSliderParameterAttachment mixAttachment;
+    std::unique_ptr<juce::WebSliderParameterAttachment> driveAttachment;
+    std::unique_ptr<juce::WebSliderParameterAttachment> ageAttachment;
+    std::unique_ptr<juce::WebSliderParameterAttachment> mixAttachment;
 
     // Helper for resource serving
     std::optional<juce::WebBrowserComponent::Resource> getResource(const juce::String& url);

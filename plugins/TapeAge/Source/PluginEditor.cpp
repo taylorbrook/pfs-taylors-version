@@ -4,31 +4,36 @@
 TapeAgeAudioProcessorEditor::TapeAgeAudioProcessorEditor(TapeAgeAudioProcessor& p)
     : AudioProcessorEditor(&p)
     , processorRef(p)
-
+{
     // Initialize relays with parameter IDs (MUST match APVTS IDs exactly)
-    , driveRelay("drive")
-    , ageRelay("age")
-    , mixRelay("mix")
+    driveRelay = std::make_unique<juce::WebSliderRelay>("drive");
+    ageRelay = std::make_unique<juce::WebSliderRelay>("age");
+    mixRelay = std::make_unique<juce::WebSliderRelay>("mix");
 
     // Initialize WebView with options
-    , webView(juce::WebBrowserComponent::Options{}
-        .withNativeIntegrationEnabled()  // CRITICAL: Enables JUCE JavaScript library
-        .withResourceProvider([this](const auto& url) { return getResource(url); })
-        .withOptionsFrom(driveRelay)     // Register each relay
-        .withOptionsFrom(ageRelay)
-        .withOptionsFrom(mixRelay)
-    )
+    webView = std::make_unique<juce::WebBrowserComponent>(
+        juce::WebBrowserComponent::Options{}
+            .withNativeIntegrationEnabled()  // CRITICAL: Enables JUCE JavaScript library
+            .withResourceProvider([this](const auto& url) { return getResource(url); })
+            .withKeepPageLoadedWhenBrowserIsHidden()  // FL Studio fix
+            .withOptionsFrom(*driveRelay)     // Register each relay
+            .withOptionsFrom(*ageRelay)
+            .withOptionsFrom(*mixRelay)
+    );
 
     // Initialize attachments (connect parameters to relays)
-    , driveAttachment(*processorRef.parameters.getParameter("drive"), driveRelay)
-    , ageAttachment(*processorRef.parameters.getParameter("age"), ageRelay)
-    , mixAttachment(*processorRef.parameters.getParameter("mix"), mixRelay)
-{
+    driveAttachment = std::make_unique<juce::WebSliderParameterAttachment>(
+        *processorRef.parameters.getParameter("drive"), *driveRelay);
+    ageAttachment = std::make_unique<juce::WebSliderParameterAttachment>(
+        *processorRef.parameters.getParameter("age"), *ageRelay);
+    mixAttachment = std::make_unique<juce::WebSliderParameterAttachment>(
+        *processorRef.parameters.getParameter("mix"), *mixRelay);
+
     // Add WebView to editor
-    addAndMakeVisible(webView);
+    addAndMakeVisible(*webView);
 
     // Navigate to UI
-    webView.goToURL(juce::WebBrowserComponent::getResourceProviderRoot());
+    webView->goToURL(juce::WebBrowserComponent::getResourceProviderRoot());
 
     // Set editor size to match mockup dimensions (500x450 from v3-ui.html)
     setSize(500, 450);
@@ -52,7 +57,7 @@ void TapeAgeAudioProcessorEditor::paint(juce::Graphics& g)
 void TapeAgeAudioProcessorEditor::resized()
 {
     // WebView fills entire editor
-    webView.setBounds(getLocalBounds());
+    webView->setBounds(getLocalBounds());
 }
 
 void TapeAgeAudioProcessorEditor::timerCallback()
@@ -62,49 +67,34 @@ void TapeAgeAudioProcessorEditor::timerCallback()
     float dbLevel = processorRef.outputLevel.load(std::memory_order_relaxed);
 
     // Emit event to JavaScript (only if WebView is visible)
-    webView.emitEventIfBrowserIsVisible("updateVUMeter", dbLevel);
+    webView->emitEventIfBrowserIsVisible("updateVUMeter", dbLevel);
 }
 
 std::optional<juce::WebBrowserComponent::Resource>
 TapeAgeAudioProcessorEditor::getResource(const juce::String& url)
 {
-    // Map URLs to embedded resources
-    auto resource = url.replaceCharacter('\\', '/');
+    // Helper lambda to convert raw binary data to vector<byte>
+    auto makeVector = [](const char* data, int size) {
+        return std::vector<std::byte>(
+            reinterpret_cast<const std::byte*>(data),
+            reinterpret_cast<const std::byte*>(data) + size
+        );
+    };
 
-    // Root "/" → index.html
-    if (resource == "/" || resource.isEmpty())
-        resource = "/index.html";
+    // Handle root URL (redirect to index.html)
+    if (url == "/" || url == "/index.html") {
+        return juce::WebBrowserComponent::Resource {
+            makeVector(BinaryData::index_html, BinaryData::index_htmlSize),
+            juce::String("text/html")
+        };
+    }
 
-    // Remove leading slash for BinaryData lookup
-    auto path = resource.substring(1);
-
-    // Find in binary data (files embedded from ui/public/)
-    for (int i = 0; i < BinaryData::namedResourceListSize; ++i)
-    {
-        if (path == BinaryData::namedResourceList[i])
-        {
-            int dataSize = 0;
-            const char* data = BinaryData::getNamedResource(
-                BinaryData::namedResourceList[i], dataSize);
-
-            // Determine MIME type
-            juce::String mimeType = "text/html";
-            if (path.endsWith(".css")) mimeType = "text/css";
-            if (path.endsWith(".js")) mimeType = "application/javascript";
-            if (path.endsWith(".png")) mimeType = "image/png";
-            if (path.endsWith(".jpg") || path.endsWith(".jpeg")) mimeType = "image/jpeg";
-            if (path.endsWith(".svg")) mimeType = "image/svg+xml";
-
-            // Convert raw pointer to std::vector<std::byte>
-            std::vector<std::byte> resourceData;
-            resourceData.reserve(static_cast<size_t>(dataSize));
-            for (int j = 0; j < dataSize; ++j)
-                resourceData.push_back(static_cast<std::byte>(data[j]));
-
-            return juce::WebBrowserComponent::Resource{
-                std::move(resourceData), mimeType
-            };
-        }
+    // JUCE frontend library
+    if (url == "/js/juce/index.js") {
+        return juce::WebBrowserComponent::Resource {
+            makeVector(BinaryData::index_js, BinaryData::index_jsSize),
+            juce::String("text/javascript")
+        };
     }
 
     // Resource not found

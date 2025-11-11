@@ -7,6 +7,7 @@ juce_add_plugin(TapeAge
     PLUGIN_CODE Plug
     FORMATS VST3 AU Standalone
     PRODUCT_NAME "TAPE AGE"
+    NEEDS_WEB_BROWSER TRUE
 )
 
 # Source files (minimal for Stage 2)
