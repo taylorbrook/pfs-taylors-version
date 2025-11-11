@@ -819,19 +819,20 @@
         // ----------------------------------------------------------------
         // MOD_MODE PARAMETER BINDING (Toggle)
         // ----------------------------------------------------------------
+        // Fix 4: Use getSliderState for boolean parameter instead of getToggleButtonState
 
-        const modModeState = Juce.getToggleButtonState("MOD_MODE");
+        const modModeState = Juce.getSliderState("MOD_MODE");
         const modModeToggle = document.getElementById("modModeToggle");
         const modModeLabel = document.getElementById("modModeState");
 
         modModeToggle.addEventListener("click", () => {
             const currentValue = modModeState.getValue();
-            modModeState.setValue(currentValue === 0 ? 1 : 0);
+            const newValue = currentValue < 0.5 ? 1.0 : 0.0;  // Toggle between 0 and 1
+            modModeState.setValue(newValue);
         });
 
-        modModeState.valueChangedEvent.addListener(() => {
-            const value = modModeState.getValue();
-            updateToggleVisual(value === 1);
+        modModeState.valueChangedEvent.addListener((value) => {
+            updateToggleVisual(value >= 0.5);  // Active if value >= 0.5
         });
 
         // ----------------------------------------------------------------
@@ -860,9 +861,19 @@
 
         const vuNeedle = document.getElementById('vuNeedle');
 
-        // Listen for VU meter updates from C++ (emitEventIfBrowserIsVisible)
-        window.updateVUMeter = (normalizedLevel) => {
-            // normalizedLevel: 0.0 = -60dB (left), 1.0 = 0dB (right)
+        // Fix 5: Listen for VU meter updates from C++ (emitEventIfBrowserIsVisible)
+        // Now receives dB values directly (like TapeAge pattern)
+        window.updateVUMeter = (dbLevel) => {
+            // VU meter scale: -60dB to 0dB (matching visual markings)
+            const minDB = -60;
+            const maxDB = 0;
+
+            // Clamp dB level to scale range
+            const clampedDB = Math.max(minDB, Math.min(maxDB, dbLevel));
+
+            // Normalize to 0-1 range
+            const normalizedLevel = (clampedDB - minDB) / (maxDB - minDB);
+
             updateVUMeterNeedle(normalizedLevel);
         };
 
@@ -899,7 +910,7 @@
         updateKnobVisual(ageRotatable, ageState.getNormalisedValue());
         updateKnobVisual(driveRotatable, driveState.getNormalisedValue());
         updateKnobVisual(toneRotatable, toneState.getNormalisedValue());
-        updateToggleVisual(modModeState.getValue() === 1);
+        updateToggleVisual(modModeState.getValue() >= 0.5);
 
         console.log('FlutterVerb UI loaded - all parameters bound to JUCE');
     </script>

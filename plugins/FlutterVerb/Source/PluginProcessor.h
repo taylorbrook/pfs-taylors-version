@@ -56,14 +56,16 @@ private:
     juce::AudioProcessorValueTreeState parameters;
 
     // Phase 5.3: VU Meter output level tracking (atomic for thread safety)
-    std::atomic<float> currentOutputLevel { 0.0f };
+    // Fix 5: Store level in dB (like TapeAge) instead of linear gain
+    std::atomic<float> outputLevel { -100.0f };  // Peak level in dB (initialized to silence)
 
     // Parameter layout creation
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
 public:
     // VU meter accessor (UI thread reads, audio thread writes)
-    float getCurrentOutputLevel() const { return currentOutputLevel.load(); }
+    // Fix 5: Returns dB value directly
+    float getCurrentOutputLevel() const { return outputLevel.load(std::memory_order_relaxed); }
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FlutterVerbAudioProcessor)

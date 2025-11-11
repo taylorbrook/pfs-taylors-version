@@ -168,26 +168,16 @@ void FlutterVerbAudioProcessorEditor::resized()
 
 void FlutterVerbAudioProcessorEditor::timerCallback()
 {
-    // Phase 5.3: Update VU meter with real-time audio level
+    // Fix 5: Update VU meter with real-time audio level (TapeAge pattern)
     if (!webView)
         return;
 
-    // Get current output level from processor (0.0-1.0, thread-safe atomic read)
-    float level = audioProcessor.getCurrentOutputLevel();
+    // Read peak level from audio processor (atomic, thread-safe)
+    // Value is already in dB format
+    float dbLevel = audioProcessor.getCurrentOutputLevel();
 
-    // Convert to dB for VU meter (-60dB to 0dB range)
-    float levelDb = level > 0.0001f
-        ? juce::Decibels::gainToDecibels(level)
-        : -60.0f;
-
-    // Clamp to VU meter range
-    levelDb = juce::jlimit(-60.0f, 0.0f, levelDb);
-
-    // Normalize to 0.0-1.0 for JavaScript (-60dB = 0.0, 0dB = 1.0)
-    float normalizedLevel = (levelDb + 60.0f) / 60.0f;
-
-    // Send to WebView via custom event
-    webView->emitEventIfBrowserIsVisible("updateVUMeter", normalizedLevel);
+    // Emit event to JavaScript (only if WebView is visible)
+    webView->emitEventIfBrowserIsVisible("updateVUMeter", dbLevel);
 }
 
 //==============================================================================

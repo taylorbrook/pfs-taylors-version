@@ -95,6 +95,11 @@ void FlutterVerbAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
     dryWetMixer.prepare(spec);
     dryWetMixer.reset();
 
+    // Fix 2: Set wet path latency compensation for modulation delay (50ms base delay)
+    float baseDelayMs = 50.0f;
+    int latencySamples = static_cast<int>((baseDelayMs / 1000.0f) * sampleRate);
+    dryWetMixer.setWetLatency(latencySamples);
+
     // Prepare reverb with ProcessSpec
     reverb.prepare(spec);
     reverb.reset();
@@ -155,10 +160,9 @@ void FlutterVerbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     juce::Reverb::Parameters reverbParams;
     reverbParams.roomSize = sizeValue;
 
-    // Map decay time to damping (inverse relationship)
-    // Short decay → high damping, long decay → low damping
-    // Empirical mapping: decay 0.1s → damping 0.9, decay 10s → damping 0.1
-    reverbParams.damping = juce::jmap(decayValue, 0.1f, 10.0f, 0.9f, 0.1f);
+    // Fix 1: Decay independence - map decay to damping, decoupled from roomSize
+    // Lower damping = longer decay time (inverse relationship maintained)
+    reverbParams.damping = juce::jmap(decayValue, 0.1f, 10.0f, 0.95f, 0.05f);
 
     reverbParams.width = 1.0f;         // Full stereo
     reverbParams.freezeMode = 0.0f;    // No freeze
@@ -206,8 +210,10 @@ void FlutterVerbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
                     // Combine modulation signals (both contribute to pitch variation)
                     float totalModulation = (wowOutput + flutterOutput) * 0.5f;  // Average to keep in ±1.0 range
 
-                    // Scale by AGE parameter
-                    totalModulation *= ageValue;
+                    // Fix 3: Scale by AGE parameter with exponential curve for more usable range
+                    // Exponential scaling gives more control in 0-50% range, still reaches extremes at 100%
+                    float scaledAge = ageValue * ageValue;  // Exponential response
+                    totalModulation *= scaledAge;
 
                     // Calculate modulated delay time in samples
                     float baseDelaySamples = (baseDelayMs / 1000.0f) * static_cast<float>(currentSampleRate);
@@ -335,7 +341,8 @@ void FlutterVerbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     // Mix dry and wet samples
     dryWetMixer.mixWetSamples(block);
 
-    // Phase 5.3: Calculate peak level for VU meter (after all DSP processing)
+    // Fix 5: Calculate peak level for VU meter (after all DSP processing)
+    // Store in dB format directly (like TapeAge pattern)
     float peakLevel = 0.0f;
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
@@ -346,15 +353,11 @@ void FlutterVerbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
         }
     }
 
-    // VU meter ballistics: fast attack, slow release (prevents jittery needle)
-    const float attackCoeff = 0.9f;   // Fast attack (needle rises quickly)
-    const float releaseCoeff = 0.95f; // Slow release (needle falls smoothly)
-
-    float lastLevel = currentOutputLevel.load();
-    if (peakLevel > lastLevel)
-        currentOutputLevel.store(peakLevel * attackCoeff + lastLevel * (1.0f - attackCoeff));
-    else
-        currentOutputLevel.store(peakLevel * (1.0f - releaseCoeff) + lastLevel * releaseCoeff);
+    // Convert to dB and store atomically (clamp to -100dB minimum to avoid log(0))
+    float peakDb = peakLevel > 0.00001f
+        ? juce::Decibels::gainToDecibels(peakLevel)
+        : -100.0f;
+    outputLevel.store(peakDb, std::memory_order_relaxed);
 }
 
 juce::AudioProcessorEditor* FlutterVerbAudioProcessor::createEditor()
