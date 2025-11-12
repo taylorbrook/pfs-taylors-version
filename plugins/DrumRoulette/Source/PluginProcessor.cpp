@@ -94,11 +94,44 @@ juce::AudioProcessorValueTreeState::ParameterLayout DrumRouletteAudioProcessor::
     return layout;
 }
 
+juce::AudioProcessor::BusesProperties DrumRouletteAudioProcessor::createBusesLayout()
+{
+    // Multi-output configuration: 9 stereo buses (18 channels total)
+    // Bus 0: Main Output (stereo)
+    // Bus 1-8: Individual Slot Outputs (stereo each)
+    BusesProperties props;
+    props = props.withOutput("Main Output", juce::AudioChannelSet::stereo(), true);
+
+    for (int slot = 1; slot <= 8; ++slot)
+    {
+        juce::String busName = "Slot " + juce::String(slot) + " Output";
+        props = props.withOutput(busName, juce::AudioChannelSet::stereo(), true);
+    }
+
+    return props;
+}
+
 DrumRouletteAudioProcessor::DrumRouletteAudioProcessor()
-    : AudioProcessor(BusesProperties()
-                        .withOutput("Output", juce::AudioChannelSet::stereo(), true))
+    : AudioProcessor(createBusesLayout())
     , parameters(*this, nullptr, "Parameters", createParameterLayout())
 {
+    // Register audio formats (WAV, AIFF, MP3, AAC)
+    formatManager.registerBasicFormats();
+
+    // Create 8 voices (one per slot, mapped to MIDI notes C1-G1)
+    for (size_t slot = 0; slot < 8; ++slot)
+    {
+        auto* voice = new DrumRouletteVoice(static_cast<int>(slot + 1));
+        voices[slot] = voice;
+        synthesiser.addVoice(voice);
+    }
+
+    // Add 8 sounds (one per MIDI note C1-G1)
+    // MIDI note mapping: C1 (36) → Slot 1, C#1 (37) → Slot 2, ..., G1 (43) → Slot 8
+    for (int midiNote = 36; midiNote <= 43; ++midiNote)
+    {
+        synthesiser.addSound(new DrumRouletteSound(midiNote));
+    }
 }
 
 DrumRouletteAudioProcessor::~DrumRouletteAudioProcessor()
@@ -107,30 +140,87 @@ DrumRouletteAudioProcessor::~DrumRouletteAudioProcessor()
 
 void DrumRouletteAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Initialization will be added in Stage 4
-    juce::ignoreUnused(sampleRate, samplesPerBlock);
+    // Prepare synthesiser with current sample rate
+    synthesiser.setCurrentPlaybackSampleRate(sampleRate);
+
+    juce::ignoreUnused(samplesPerBlock);
 }
 
 void DrumRouletteAudioProcessor::releaseResources()
 {
-    // Cleanup will be added in Stage 4
+    // Optional: Release resources when plugin not in use
 }
 
 void DrumRouletteAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    juce::ignoreUnused(midiMessages);
 
-    // Pass-through for Stage 3 (DSP implementation happens in Stage 4)
-    // Instrument needs to clear output buffer (no audio input to pass through)
-    buffer.clear();
+    // Clear all output buses
+    for (int busIndex = 0; busIndex < getBusCount(false); ++busIndex)
+    {
+        auto busBuffer = getBusBuffer(buffer, false, busIndex);
+        busBuffer.clear();
+    }
 
-    // Parameter access example (for Stage 4 DSP implementation):
-    // auto* volumeParam = parameters.getRawParameterValue("VOLUME_1");
-    // float volumeValue = volumeParam->load();  // Atomic read (real-time safe)
-    //
-    // auto* lockParam = parameters.getRawParameterValue("LOCK_1");
-    // bool isLocked = lockParam->load() >= 0.5f;
+    // Get main output buffer (Bus 0)
+    auto mainBuffer = getBusBuffer(buffer, false, 0);
+
+    // Render synthesiser to main output
+    synthesiser.renderNextBlock(mainBuffer, midiMessages, 0, mainBuffer.getNumSamples());
+
+    // Copy each voice's output to its individual bus (Bus 1-8)
+    // Note: Phase 4.1 has basic implementation - individual routing enhanced in Phase 4.4
+    for (int slot = 0; slot < 8; ++slot)
+    {
+        int busIndex = slot + 1;  // Bus 1-8 for slots 1-8
+
+        if (busIndex < getBusCount(false))
+        {
+            auto slotBuffer = getBusBuffer(buffer, false, busIndex);
+
+            // Copy main output to individual slot output
+            // (Phase 4.4 will implement per-voice routing)
+            for (int channel = 0; channel < slotBuffer.getNumChannels(); ++channel)
+            {
+                if (channel < mainBuffer.getNumChannels())
+                {
+                    slotBuffer.copyFrom(channel, 0, mainBuffer, channel, 0, slotBuffer.getNumSamples());
+                }
+            }
+        }
+    }
+}
+
+bool DrumRouletteAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
+{
+    // Validate multi-output bus configuration
+    // Must have 9 output buses (1 main + 8 individual), all stereo
+
+    if (layouts.outputBuses.size() != 9)
+        return false;
+
+    // All buses must be stereo
+    for (const auto& bus : layouts.outputBuses)
+    {
+        if (bus != juce::AudioChannelSet::stereo())
+            return false;
+    }
+
+    return true;
+}
+
+void DrumRouletteAudioProcessor::loadSampleForSlot(int slotIndex, const juce::File& file)
+{
+    // slotIndex is 1-based (1-8)
+    if (slotIndex < 1 || slotIndex > 8)
+        return;
+
+    size_t voiceIndex = static_cast<size_t>(slotIndex - 1);  // Convert to 0-based for array access
+
+    if (voices[voiceIndex] != nullptr)
+    {
+        voices[voiceIndex]->loadSample(file);
+    }
 }
 
 juce::AudioProcessorEditor* DrumRouletteAudioProcessor::createEditor()

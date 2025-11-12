@@ -1,5 +1,7 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_audio_formats/juce_audio_formats.h>
+#include "DrumRouletteVoice.h"
 
 class DrumRouletteAudioProcessor : public juce::AudioProcessor
 {
@@ -29,10 +31,20 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
+    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
+
+    void loadSampleForSlot(int slotIndex, const juce::File& file);
+
     juce::AudioProcessorValueTreeState parameters;
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    static BusesProperties createBusesLayout();
+
+    // DSP Components (declare BEFORE parameters for initialization order)
+    juce::Synthesiser synthesiser;
+    juce::AudioFormatManager formatManager;
+    std::array<DrumRouletteVoice*, 8> voices;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DrumRouletteAudioProcessor)
 };

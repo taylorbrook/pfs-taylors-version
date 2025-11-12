@@ -14,11 +14,12 @@ juce_add_plugin(DrumRoulette
     IS_SYNTH TRUE
 )
 
-# Source files (minimal for Stage 2)
+# Source files
 target_sources(DrumRoulette
     PRIVATE
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
+        Source/DrumRouletteVoice.cpp
 )
 
 # Include paths
