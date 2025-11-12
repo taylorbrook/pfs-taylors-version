@@ -54,22 +54,22 @@ target_compile_definitions(LushVerb
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
-# WebView support (uncommented - required for Stage 5)
-# target_compile_definitions(LushVerb
-#     PUBLIC
-#         JUCE_WEB_BROWSER=1
-#         JUCE_USE_CURL=0
-# )
+# WebView support (CRITICAL: Pattern #9)
+target_compile_definitions(LushVerb
+    PUBLIC
+        JUCE_WEB_BROWSER=1
+        JUCE_USE_CURL=0
+)
 
-# WebView UI Resources (uncommented by gui-agent if WebView UI used)
-# juce_add_binary_data(LushVerb_UIResources
-#     SOURCES
-#         Source/ui/public/index.html
-#         Source/ui/public/js/juce/index.js
-#         Source/ui/public/js/juce/check_native_interop.js
-# )
-#
-# target_link_libraries(LushVerb
-#     PRIVATE
-#         LushVerb_UIResources
-# )
+# WebView UI Resources (CRITICAL: Pattern #8, #13)
+juce_add_binary_data(LushVerb_UIResources
+    SOURCES
+        Source/ui/public/index.html
+        Source/ui/public/js/juce/index.js
+        Source/ui/public/js/juce/check_native_interop.js
+)
+
+target_link_libraries(LushVerb
+    PRIVATE
+        LushVerb_UIResources
+)

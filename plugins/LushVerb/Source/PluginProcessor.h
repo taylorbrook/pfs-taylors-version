@@ -30,6 +30,9 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
+    // Public APVTS member (required for WebView parameter bindings)
+    juce::AudioProcessorValueTreeState parameters;
+
 private:
     // DSP Components (declare BEFORE parameters for initialization order)
     juce::dsp::Reverb reverb;
@@ -54,9 +57,6 @@ private:
     juce::HeapBlock<float> fftData;
     juce::HeapBlock<float> shiftedFFTData;
     int hopCounter = 0;
-
-    // APVTS comes AFTER DSP components
-    juce::AudioProcessorValueTreeState parameters;
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
