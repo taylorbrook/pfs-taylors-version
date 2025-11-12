@@ -30,7 +30,7 @@
 | DriveVerb | 📦 Installed | 1.0.2 | 2025-11-12 |
 | FlutterVerb | 📦 Installed | 1.0.3 | 2025-11-12 |
 | LushVerb | 🚧 Stage 1 | - | 2025-11-11 |
-| OrganicHats | 🚧 Stage 0 | - | 2025-11-12 |
+| OrganicHats | 🚧 Stage 1 | - | 2025-11-12 |
 
 ### GainKnob
 
@@ -430,9 +430,10 @@ Stunning, lush algorithmic reverb inspired by Strymon BigSky. Four simple contro
 
 ### OrganicHats
 
-**Status:** 🚧 **Stage 0**
+**Status:** 🚧 **Stage 1**
 **Created:** 2025-11-12
 **Type:** Synth (Instrument)
+**Complexity:** 5.0 (Complex)
 
 **Description:**
 Warm, organic noise-based hi-hat synthesizer with separate closed and open sounds. Inspired by CR-78/808 drum machines but with warmer, less metallic character. Features instant choking behavior (closed chokes open).
@@ -474,6 +475,7 @@ Global:
 **Lifecycle Timeline:**
 - **2025-11-12:** Creative brief completed
 - **2025-11-12 (Stage 0):** Research completed - DSP architecture documented
+- **2025-11-12 (Stage 1):** Planning - Complexity 5.0 (phased implementation)
 
 **Known Issues:**
 - None
