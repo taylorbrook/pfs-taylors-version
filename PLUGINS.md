@@ -224,6 +224,7 @@ Algorithmic reverb with warm tape saturation applied only to the wet signal, plu
 - **2025-11-11 (Stage 4.2):** Drive saturation (tanh waveshaping, 0-24dB, wet only)
 - **2025-11-11 (Stage 4.3):** DJ-style filter (IIR, exponential mapping, center bypass)
 - **2025-11-12 (Stage 4.4):** PRE/POST routing (conditional branching for filter placement)
+- **2025-11-12 (Stage 5.1):** WebView layout + 5 interactive knobs (size, decay, dryWet, drive, filter)
 
 **Known Issues:**
 - None

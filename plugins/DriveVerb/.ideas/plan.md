@@ -118,7 +118,9 @@
 
 ## Stage 5: GUI Phases
 
-### Phase 5.1: WebView Layout + Basic Knobs
+### Phase 5.1: WebView Layout + Basic Knobs ✓
+
+**Completed:** 2025-11-12T13:30:00Z
 
 **Goal:** Integrate WebView with 5 rotary knobs (no toggle yet)
 
@@ -130,13 +132,13 @@
 - Member order: Relays → WebView → Attachments
 
 **Test Criteria:**
-- [ ] WebView displays correctly (1000x500px window)
-- [ ] All 5 knobs visible and styled correctly
-- [ ] Knobs respond to mouse drag
-- [ ] Parameter values update in real-time
-- [ ] DAW automation updates knob positions
-- [ ] No crashes on plugin reload
-- [ ] Vintage hardware aesthetic matches mockup
+- [x] WebView displays correctly (1000x500px window)
+- [x] All 5 knobs visible and styled correctly
+- [x] Knobs respond to mouse drag
+- [x] Parameter values update in real-time
+- [x] DAW automation updates knob positions
+- [x] No crashes on plugin reload
+- [x] Vintage hardware aesthetic matches mockup
 
 **Duration:** 30 min
 
