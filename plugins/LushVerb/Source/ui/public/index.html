@@ -301,8 +301,10 @@
         </div>
     </div>
 
-    <script src="js/juce/index.js"></script>
-    <script>
+    <script type="module" src="js/juce/index.js"></script>
+    <script type="module">
+        import { getSliderState } from './js/juce/index.js';
+
         // Disable context menu
         document.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -337,7 +339,7 @@
             // Get SliderState from JUCE (Pattern #15)
             let sliderState = null;
             if (window.__JUCE__ && window.__JUCE__.backend) {
-                sliderState = window.__JUCE__.backend.getSliderState(paramId);
+                sliderState = getSliderState(paramId);
             }
 
             if (!sliderState) {

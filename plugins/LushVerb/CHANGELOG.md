@@ -4,6 +4,28 @@ All notable changes to LushVerb will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.1] - 2025-11-11
+
+### Fixed
+
+- WebView knobs frozen issue - knobs now respond to mouse drag
+  - Root cause: ES6 module export/import mismatch in index.html
+  - Impact: All four parameter knobs were non-interactive (couldn't rotate or update)
+  - Symptoms: Knobs displayed correctly but didn't respond to drag, DAW automation worked but UI didn't reflect changes
+
+### Technical
+
+- UI changes:
+  - Added `type="module"` to script tags in index.html
+  - Added ES6 import statement: `import { getSliderState } from './js/juce/index.js'`
+  - Changed API call from `window.__JUCE__.backend.getSliderState()` to direct `getSliderState()` call
+  - Fixed JavaScript module loading to enable proper JUCE WebView integration
+
+### Testing
+
+- Manual verification: Knob rotation, drag sensitivity, DAW automation reflection
+- No regression - presets and parameter values unaffected
+
 ## [1.0.0] - 2025-11-11
 
 ### Added
