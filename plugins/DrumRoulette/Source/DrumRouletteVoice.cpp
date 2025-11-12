@@ -16,6 +16,41 @@ void DrumRouletteVoice::setParameterPointers(std::atomic<float>* attack, std::at
     volumeParam = volume;
 }
 
+void DrumRouletteVoice::setSoloMutePointers(std::atomic<float>* solo, std::atomic<float>* mute, bool* anySoloActive)
+{
+    soloParam = solo;
+    muteParam = mute;
+    this->anySoloActive = anySoloActive;
+}
+
+bool DrumRouletteVoice::shouldRenderToMainMix() const
+{
+    // Check mute state
+    if (muteParam != nullptr && muteParam->load() > 0.5f)
+    {
+        // If muted, check if this voice is soloed (solo overrides mute)
+        if (soloParam != nullptr && soloParam->load() > 0.5f)
+        {
+            return true;  // Soloed voice is always audible (even if muted)
+        }
+        return false;  // Muted and not soloed
+    }
+
+    // Check solo state
+    if (anySoloActive != nullptr && *anySoloActive)
+    {
+        // If ANY solo is active, only soloed voices are audible
+        if (soloParam != nullptr && soloParam->load() > 0.5f)
+        {
+            return true;  // This voice is soloed
+        }
+        return false;  // Another voice is soloed, this one is silent
+    }
+
+    // No mute, no solo active - render normally
+    return true;
+}
+
 void DrumRouletteVoice::setCurrentPlaybackSampleRate(double newRate)
 {
     // Store sample rate for DSP components (Phase 4.3)
@@ -126,6 +161,10 @@ void DrumRouletteVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, 
         return;
     }
 
+    // Phase 4.4: Check if voice should render to main mix (solo/mute logic)
+    const bool renderToMix = shouldRenderToMainMix();
+    const float soloMuteGain = renderToMix ? 1.0f : 0.0f;
+
     const int numChannels = juce::jmin(outputBuffer.getNumChannels(), sampleBuffer.getNumChannels());
     const int sampleLength = sampleBuffer.getNumSamples();
 
@@ -173,6 +212,9 @@ void DrumRouletteVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, 
                 float volumeGainValue = juce::Decibels::decibelsToGain(volumeDb, -100.0f);
                 outputValue *= volumeGainValue;
             }
+
+            // Phase 4.4: Apply solo/mute gain to main mix
+            outputValue *= soloMuteGain;
 
             outputBuffer.addSample(channel, startSample + sample, outputValue);
         }

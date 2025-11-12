@@ -134,7 +134,27 @@ DrumRouletteAudioProcessor::DrumRouletteAudioProcessor()
         auto* volumeParam = parameters.getRawParameterValue("VOLUME_" + slotNum);
 
         voice->setParameterPointers(attackParam, decayParam, pitchParam, tiltParam, volumeParam);
+
+        // Phase 4.4: Get parameter pointers for solo/mute/lock/randomize
+        lockParams[slot] = parameters.getRawParameterValue("LOCK_" + slotNum);
+        soloParams[slot] = parameters.getRawParameterValue("SOLO_" + slotNum);
+        muteParams[slot] = parameters.getRawParameterValue("MUTE_" + slotNum);
+        randomizeParams[slot] = parameters.getRawParameterValue("RANDOMIZE_" + slotNum);
+
+        // Pass solo/mute pointers to voice
+        voice->setSoloMutePointers(soloParams[slot], muteParams[slot], &anySoloActive);
     }
+
+    // Phase 4.4: Get global randomize parameter
+    randomizeAllParam = parameters.getRawParameterValue("RANDOMIZE_ALL");
+
+    // Phase 4.4: Register parameter listeners for button triggers
+    for (int slot = 1; slot <= 8; ++slot)
+    {
+        juce::String slotNum = juce::String(slot);
+        parameters.addParameterListener("RANDOMIZE_" + slotNum, this);
+    }
+    parameters.addParameterListener("RANDOMIZE_ALL", this);
 
     // Add 8 sounds (one per MIDI note C1-G1)
     // MIDI note mapping: C1 (36) → Slot 1, C#1 (37) → Slot 2, ..., G1 (43) → Slot 8
@@ -146,6 +166,13 @@ DrumRouletteAudioProcessor::DrumRouletteAudioProcessor()
 
 DrumRouletteAudioProcessor::~DrumRouletteAudioProcessor()
 {
+    // Phase 4.4: Remove parameter listeners
+    for (int slot = 1; slot <= 8; ++slot)
+    {
+        juce::String slotNum = juce::String(slot);
+        parameters.removeParameterListener("RANDOMIZE_" + slotNum, this);
+    }
+    parameters.removeParameterListener("RANDOMIZE_ALL", this);
 }
 
 void DrumRouletteAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
@@ -172,14 +199,27 @@ void DrumRouletteAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
         busBuffer.clear();
     }
 
+    // Phase 4.4: Update anySoloActive flag for voice access
+    anySoloActive = false;
+    for (int slot = 0; slot < 8; ++slot)
+    {
+        if (soloParams[slot] != nullptr && soloParams[slot]->load() > 0.5f)
+        {
+            anySoloActive = true;
+            break;
+        }
+    }
+
     // Get main output buffer (Bus 0)
     auto mainBuffer = getBusBuffer(buffer, false, 0);
 
     // Render synthesiser to main output
+    // Note: Voices check solo/mute state in their renderNextBlock via shouldRenderToMainMix()
+    // This implementation renders all voices but voices can apply their own gain scaling
     synthesiser.renderNextBlock(mainBuffer, midiMessages, 0, mainBuffer.getNumSamples());
 
-    // Copy each voice's output to its individual bus (Bus 1-8)
-    // Note: Phase 4.1 has basic implementation - individual routing enhanced in Phase 4.4
+    // Copy individual slot outputs (Bus 1-8)
+    // Individual outputs are always active regardless of solo/mute
     for (int slot = 0; slot < 8; ++slot)
     {
         int busIndex = slot + 1;  // Bus 1-8 for slots 1-8
@@ -189,7 +229,7 @@ void DrumRouletteAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
             auto slotBuffer = getBusBuffer(buffer, false, busIndex);
 
             // Copy main output to individual slot output
-            // (Phase 4.4 will implement per-voice routing)
+            // Phase 4.4: Individual outputs bypass solo/mute (always active)
             for (int channel = 0; channel < slotBuffer.getNumChannels(); ++channel)
             {
                 if (channel < mainBuffer.getNumChannels())
@@ -233,6 +273,116 @@ void DrumRouletteAudioProcessor::loadSampleForSlot(int slotIndex, const juce::Fi
     }
 }
 
+void DrumRouletteAudioProcessor::setFolderPathForSlot(int slotIndex, const juce::String& path)
+{
+    // slotIndex is 1-based (1-8)
+    if (slotIndex < 1 || slotIndex > 8)
+        return;
+
+    size_t index = static_cast<size_t>(slotIndex - 1);
+    folderPaths[index] = path;
+}
+
+juce::String DrumRouletteAudioProcessor::getFolderPathForSlot(int slotIndex) const
+{
+    // slotIndex is 1-based (1-8)
+    if (slotIndex < 1 || slotIndex > 8)
+        return {};
+
+    size_t index = static_cast<size_t>(slotIndex - 1);
+    return folderPaths[index];
+}
+
+void DrumRouletteAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
+{
+    // Phase 4.4: Handle button triggers (buttons are momentary - newValue > 0.5 means pressed)
+    if (newValue < 0.5f)
+        return;  // Button released, ignore
+
+    // Check for RANDOMIZE_N buttons (1-8)
+    for (int slot = 1; slot <= 8; ++slot)
+    {
+        juce::String slotNum = juce::String(slot);
+        if (parameterID == "RANDOMIZE_" + slotNum)
+        {
+            randomizeSample(slot);
+            return;
+        }
+    }
+
+    // Check for RANDOMIZE_ALL button
+    if (parameterID == "RANDOMIZE_ALL")
+    {
+        randomizeAllUnlockedSlots();
+    }
+}
+
+void DrumRouletteAudioProcessor::randomizeSample(int slotIndex)
+{
+    // slotIndex is 1-based (1-8)
+    if (slotIndex < 1 || slotIndex > 8)
+        return;
+
+    size_t index = static_cast<size_t>(slotIndex - 1);
+
+    // Check if folder path is set
+    if (folderPaths[index].isEmpty())
+    {
+        DBG("Folder path not set for slot " << slotIndex);
+        return;
+    }
+
+    // Thread-safe file I/O: Defer to message thread
+    juce::MessageManager::callAsync([this, slotIndex, index]()
+    {
+        juce::File folder(folderPaths[index]);
+
+        if (!folder.exists() || !folder.isDirectory())
+        {
+            DBG("Invalid folder path for slot " << slotIndex << ": " << folderPaths[index]);
+            return;
+        }
+
+        // Find all audio files recursively
+        juce::Array<juce::File> audioFiles = folder.findChildFiles(
+            juce::File::findFiles,
+            true,  // Search recursively
+            "*.wav;*.aiff;*.aif;*.mp3;*.m4a");
+
+        if (audioFiles.isEmpty())
+        {
+            DBG("No audio files found in folder for slot " << slotIndex);
+            return;
+        }
+
+        // Select random file
+        int randomIndex = juce::Random::getSystemRandom().nextInt(audioFiles.size());
+        juce::File selectedFile = audioFiles[randomIndex];
+
+        DBG("Loading random sample for slot " << slotIndex << ": " << selectedFile.getFileName());
+
+        // Load sample
+        loadSampleForSlot(slotIndex, selectedFile);
+    });
+}
+
+void DrumRouletteAudioProcessor::randomizeAllUnlockedSlots()
+{
+    // Iterate all slots and randomize if not locked
+    for (int slot = 0; slot < 8; ++slot)
+    {
+        // Check LOCK parameter (if true, skip)
+        if (lockParams[slot] != nullptr && lockParams[slot]->load() > 0.5f)
+        {
+            DBG("Slot " << (slot + 1) << " is locked, skipping randomization");
+            continue;
+        }
+
+        // Randomize this slot
+        randomizeSample(slot + 1);  // Convert to 1-based
+    }
+}
+
 juce::AudioProcessorEditor* DrumRouletteAudioProcessor::createEditor()
 {
     return new DrumRouletteAudioProcessorEditor(*this);
@@ -241,6 +391,14 @@ juce::AudioProcessorEditor* DrumRouletteAudioProcessor::createEditor()
 void DrumRouletteAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
+
+    // Phase 4.4: Add folder paths to state tree
+    for (int slot = 0; slot < 8; ++slot)
+    {
+        juce::String propName = "folderPath" + juce::String(slot + 1);
+        state.setProperty(propName, folderPaths[slot], nullptr);
+    }
+
     std::unique_ptr<juce::XmlElement> xml(state.createXml());
     copyXmlToBinary(*xml, destData);
 }
@@ -250,7 +408,20 @@ void DrumRouletteAudioProcessor::setStateInformation(const void* data, int sizeI
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
 
     if (xmlState != nullptr && xmlState->hasTagName(parameters.state.getType()))
-        parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+    {
+        auto state = juce::ValueTree::fromXml(*xmlState);
+        parameters.replaceState(state);
+
+        // Phase 4.4: Restore folder paths from state tree
+        for (int slot = 0; slot < 8; ++slot)
+        {
+            juce::String propName = "folderPath" + juce::String(slot + 1);
+            if (state.hasProperty(propName))
+            {
+                folderPaths[slot] = state.getProperty(propName).toString();
+            }
+        }
+    }
 }
 
 // Factory function

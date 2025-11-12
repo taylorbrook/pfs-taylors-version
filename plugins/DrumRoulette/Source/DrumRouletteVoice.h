@@ -22,6 +22,9 @@ public:
     void setParameterPointers(std::atomic<float>* attack, std::atomic<float>* decay, std::atomic<float>* pitch,
                               std::atomic<float>* tilt, std::atomic<float>* volume);
 
+    void setSoloMutePointers(std::atomic<float>* solo, std::atomic<float>* mute, bool* anySoloActive);
+    bool shouldRenderToMainMix() const;
+
 private:
     int slotNumber;
     juce::AudioSampleBuffer sampleBuffer;
@@ -49,6 +52,11 @@ private:
     std::atomic<float>* pitchParam = nullptr;
     std::atomic<float>* tiltFilterParam = nullptr;
     std::atomic<float>* volumeParam = nullptr;
+
+    // Phase 4.4: Solo/Mute state
+    std::atomic<float>* soloParam = nullptr;
+    std::atomic<float>* muteParam = nullptr;
+    bool* anySoloActive = nullptr;
 
     JUCE_LEAK_DETECTOR(DrumRouletteVoice)
 };
