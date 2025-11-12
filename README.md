@@ -32,17 +32,21 @@ All plugins compile to native VST3/AU formats compatible with any DAW (Ableton, 
 
 ### 1. Dream (`/dream`)
 
-Brainstorm plugin concepts through conversation. Describe what you want—a vintage tape delay, a granular synthesizer, a spectral freeze effect—and refine the idea into a detailed creative brief.
+Brainstorm your plugin concept through conversation:
+- **Creative brief** - Vision, sonic goals, UX principles
+- **Parameter specification** - All controls, ranges, and mappings
+- **UI mockups** - Visual design and layout
 
 ### 2. Plan (`/plan`)
 
-Design the plugin's parameters, architecture, and UI mockups. Create visual representations before writing any code. Iterate on the design until it feels right.
+Research and design the technical architecture:
+- **DSP architecture** - Signal flow and processing strategy
+- **Implementation plan** - Technical approach and complexity analysis
 
 ### 3. Implement (`/implement`)
 
-Transform your specifications into a fully functional plugin through an automated 7-stage workflow:
+Transform your specifications into a fully functional plugin through an automated workflow:
 
-- **Stage 0-1**: Research and planning (contracts)
 - **Stage 2**: Foundation (project structure, CMake, basic scaffolding)
 - **Stage 3**: Shell (APVTS, parameter management, state)
 - **Stage 4**: DSP (audio processing algorithms)
@@ -181,26 +185,26 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 ### Create Your First Plugin
 
 ```bash
-# 1. Start with an idea
+# 1. Dream the concept
 /dream
 
-# Describe your plugin concept through conversation
-# Example: "A tape delay with wow/flutter modulation and analog saturation"
+# Brainstorm your plugin idea through conversation
+# Creates: creative brief, parameter spec, UI mockups
 
-# 2. Plan the implementation
+# 2. Plan the architecture
 /plan
 
-# Design parameters, architecture, and UI mockups
-# Iterate until the design feels right
+# Research and design the technical implementation
+# Creates: DSP architecture, implementation plan
 
-# 3. Build the plugin
+# 3. Build it
 /implement
 
 # Automated 7-stage workflow handles all technical implementation
 # Takes 5-15 minutes depending on complexity
 
 # 4. Install and test
-/install-plugin MyPlugin
+/install-plugin YourPluginName
 
 # Plugin now available in your DAW
 ```
@@ -235,9 +239,9 @@ All other dependencies (Xcode Command Line Tools, JUCE, CMake, Python, pluginval
 
 ### Development Workflow
 
-- `/dream` - Ideate new plugin concept
-- `/plan` - Research and design (Stages 0-1)
-- `/implement [Name]` - Build plugin (Stages 2-6)
+- `/dream` - Brainstorm concept, create creative brief, parameter spec, and UI mockups
+- `/plan` - Research and design DSP architecture and implementation strategy
+- `/implement [Name]` - Build plugin through automated workflow (Stages 2-6)
 - `/continue [Name]` - Resume paused workflow
 - `/improve [Name]` - Modify completed plugin (with regression testing)
 
