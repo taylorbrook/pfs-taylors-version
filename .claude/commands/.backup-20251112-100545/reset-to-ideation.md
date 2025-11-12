@@ -106,7 +106,7 @@ The plugin-lifecycle skill will present interactive confirmation showing:
 - Backup location (backups/rollbacks/)
 - Status transition ([Current] → 💡 Ideated)
 
-See confirmation example in `.claude/skills/plugin-lifecycle/assets/reset-confirmation-example.txt`
+See [plugin-lifecycle assets/reset-confirmation-example.txt](.claude/skills/plugin-lifecycle/assets/reset-confirmation-example.txt) for sample output.
 
 ## Success Output
 
@@ -117,7 +117,7 @@ On successful reset, plugin-lifecycle skill displays:
 - Status transition confirmation
 - Suggested next steps
 
-See success example in `.claude/skills/plugin-lifecycle/assets/reset-success-example.txt`
+See [plugin-lifecycle assets/reset-success-example.txt](.claude/skills/plugin-lifecycle/assets/reset-success-example.txt) for sample output.
 
 ## Routes To
 
