@@ -30,7 +30,7 @@
 | DriveVerb | 📦 Installed | 1.0.2 | 2025-11-12 |
 | FlutterVerb | 📦 Installed | 1.0.3 | 2025-11-12 |
 | LushVerb | 🚧 Stage 1 | - | 2025-11-11 |
-| OrganicHats | 🚧 Stage 3 | - | 2025-11-12 |
+| OrganicHats | 🚧 Stage 5 | - | 2025-11-12 |
 
 ### GainKnob
 
@@ -481,6 +481,9 @@ Global:
 - **2025-11-12 (Stage 4.1):** Voice architecture + noise generation (C1/D1 MIDI routing, ADSR envelopes)
 - **2025-11-12 (Stage 4.2):** Filtering + tone shaping (Tone filter 3-15kHz, Noise Color filter 5-10kHz, velocity modulation)
 - **2025-11-12 (Stage 4.3):** Resonators + choke logic (3 fixed peaks 7/10/13kHz, closed chokes open)
+- **2025-11-12 (Stage 5.1):** WebView layout integration (600×590px, studio hardware aesthetic)
+- **2025-11-12 (Stage 5.2):** Parameter binding complete (6 parameters with ES6 modules and relative drag)
+- **2025-11-12 (Stage 5.3):** Power LED and polish (pulse animation, final styling)
 
 **Known Issues:**
 - None
