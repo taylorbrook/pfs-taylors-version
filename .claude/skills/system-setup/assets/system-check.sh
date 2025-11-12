@@ -257,6 +257,7 @@ check_pluginval() {
     local search_paths=(
         "/usr/local/bin/pluginval"
         "$HOME/bin/pluginval"
+        "/Applications/pluginval.app/Contents/MacOS/pluginval"
         "C:/Program Files/pluginval/pluginval.exe"
     )
 
