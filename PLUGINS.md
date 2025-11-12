@@ -478,6 +478,7 @@ Global:
 - **2025-11-12 (Stage 1):** Planning - Complexity 5.0 (phased implementation)
 - **2025-11-12 (Stage 2):** Foundation - Build system operational, compiles successfully
 - **2025-11-12 (Stage 3):** Shell complete - 6 parameters implemented
+- **2025-11-12 (Stage 4.1):** Voice architecture + noise generation (C1/D1 MIDI routing, ADSR envelopes)
 
 **Known Issues:**
 - None
