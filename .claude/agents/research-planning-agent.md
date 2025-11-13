@@ -569,50 +569,129 @@ DSP architecture documented and implementation plan created. Ready to proceed to
 - plugins/[PluginName]/.ideas/plan.md
 ```
 
-#### 2. Update PLUGINS.md (ATOMIC - both locations)
+## State Management
 
-**New entry format (MUST include registry table entry):**
-```markdown
-1. Add to registry table (at line ~34, before first ### entry):
-   | [PluginName] | 🚧 Stage 0 | [X.X] | [YYYY-MM-DD] |
+After completing research & planning, update workflow state files:
 
-2. Add full entry section:
-   ### [PluginName]
+### Step 1: Read Current State
 
-   **Status:** 🚧 Stage 0
-   **Type:** [Audio Effect | MIDI Instrument | Synth | Utility]
-   **Created:** [YYYY-MM-DD]
-   **Complexity:** [X.X]
+Read the existing continuation file (if it exists):
 
-   [Brief description from creative-brief.md]
-
-   **Lifecycle Timeline:**
-   - **[YYYY-MM-DD]:** Creative brief created
-   - **[YYYY-MM-DD] (Stage 0):** Research & Planning complete - Architecture and plan documented (Complexity [X.X])
-
-   **Last Updated:** [YYYY-MM-DD]
+```bash
+# Read current state (may not exist for new plugins)
+cat plugins/[PluginName]/.continue-here.md 2>/dev/null
 ```
 
-**Update existing entry (ATOMIC - both locations):**
-```markdown
-1. Update registry table:
-   Find: | [PluginName] | 💡 Ideated | ...
-   Replace: | [PluginName] | 🚧 Stage 0 | [X.X] | [YYYY-MM-DD] |
+If file doesn't exist, this is a new plugin. If it exists, parse YAML frontmatter to verify current stage.
 
-2. Update full entry section:
-   Find: **Status:** 💡 Ideated
-   Replace: **Status:** 🚧 Stage 0
+### Step 2: Calculate Contract Checksums
 
-3. Add complexity field to full section:
-   Add after Type: **Complexity:** [X.X]
+Calculate SHA256 checksums for tamper detection:
 
-4. Add timeline entry to full section:
-   - **[YYYY-MM-DD] (Stage 0):** Research & Planning complete - Architecture and plan documented (Complexity [X.X])
-
-5. Update last updated in both locations
+```bash
+# Calculate checksums
+BRIEF_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/creative-brief.md | awk '{print $1}')
+PARAM_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/parameter-spec.md | awk '{print $1}')
+ARCH_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/architecture.md | awk '{print $1}')
+PLAN_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/plan.md | awk '{print $1}')
 ```
 
-**CRITICAL:** Always update BOTH locations to prevent registry drift.
+### Step 3: Update .continue-here.md
+
+Update the YAML frontmatter fields:
+
+```yaml
+---
+plugin: [PluginName]
+stage: 0
+phase: null
+status: complete
+last_updated: [YYYY-MM-DD]
+complexity_score: [from plan.md]
+phased_implementation: [from plan.md]
+orchestration_mode: true
+next_action: invoke_foundation_shell_agent
+next_phase: null
+contract_checksums:
+  creative_brief: sha256:[hash]
+  parameter_spec: sha256:[hash]
+  architecture: sha256:[hash]
+  plan: sha256:[hash]
+---
+```
+
+Update the Markdown sections:
+
+- **Append to "Completed So Far":** `- **Stage 0:** Research & Planning complete - Architecture and plan documented (Complexity [X.X])`
+- **Update "Next Steps":** Add Stage 2 items (foundation-shell-agent invocation)
+- **Update "Context to Preserve":** Add architecture file locations, complexity score, implementation strategy
+
+### Step 4: Update PLUGINS.md
+
+Update both locations atomically:
+
+**Registry table:**
+```markdown
+| PluginName | 🚧 Stage 0 | 1.0.0 | [YYYY-MM-DD] |
+```
+
+**Full entry:**
+```markdown
+### PluginName
+**Status:** 🚧 Stage 0
+**Complexity:** [X.X]
+...
+**Lifecycle Timeline:**
+- **[YYYY-MM-DD] (Stage 0):** Research & Planning complete - Architecture and plan documented (Complexity [X.X])
+
+**Last Updated:** [YYYY-MM-DD]
+```
+
+### Step 5: Report State Update in JSON
+
+Include state update status in the completion report:
+
+```json
+{
+  "agent": "research-planning-agent",
+  "status": "success",
+  "outputs": {
+    "plugin_name": "[PluginName]",
+    "architecture_file": "plugins/[PluginName]/.ideas/architecture.md",
+    "plan_file": "plugins/[PluginName]/.ideas/plan.md",
+    "complexity_score": 3.2,
+    "implementation_strategy": "phased"
+  },
+  "issues": [],
+  "ready_for_next_stage": true,
+  "stateUpdated": true
+}
+```
+
+**On state update error:**
+
+```json
+{
+  "agent": "research-planning-agent",
+  "status": "success",
+  "outputs": {
+    "plugin_name": "[PluginName]",
+    ...
+  },
+  "issues": [],
+  "ready_for_next_stage": true,
+  "stateUpdated": false,
+  "stateUpdateError": "Failed to write .continue-here.md: [error message]"
+}
+```
+
+**Error handling:**
+
+If state update fails:
+1. Report implementation success but state update failure
+2. Set `stateUpdated: false`
+3. Include `stateUpdateError` with specific error message
+4. Orchestrator will attempt manual state update
 
 #### 3. Git Commit
 

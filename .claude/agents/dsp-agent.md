@@ -522,6 +522,127 @@ juce::dsp::\w+<float>\s+(\w+);
 ### 10. Return Report
 </workflow>
 
+## State Management
+
+After completing DSP implementation, update workflow state files:
+
+### Step 1: Read Current State
+
+Read the existing continuation file:
+
+```bash
+# Read current state
+cat plugins/[PluginName]/.continue-here.md
+```
+
+Parse the YAML frontmatter to verify the current stage matches expected (should be 2).
+
+### Step 2: Calculate Contract Checksums
+
+Calculate SHA256 checksums for tamper detection:
+
+```bash
+# Calculate checksums
+BRIEF_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/creative-brief.md | awk '{print $1}')
+PARAM_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/parameter-spec.md | awk '{print $1}')
+ARCH_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/architecture.md | awk '{print $1}')
+PLAN_SHA=$(shasum -a 256 plugins/[PluginName]/.ideas/plan.md | awk '{print $1}')
+```
+
+### Step 3: Update .continue-here.md
+
+Update the YAML frontmatter fields:
+
+```yaml
+---
+plugin: [PluginName]
+stage: 3
+phase: null
+status: complete
+last_updated: [YYYY-MM-DD]
+complexity_score: [from plan.md]
+phased_implementation: [from plan.md]
+orchestration_mode: true
+next_action: invoke_gui_agent
+next_phase: [4.1 if phased, else null]
+contract_checksums:
+  creative_brief: sha256:[hash]
+  parameter_spec: sha256:[hash]
+  architecture: sha256:[hash]
+  plan: sha256:[hash]
+---
+```
+
+Update the Markdown sections:
+
+- **Append to "Completed So Far":** `- **Stage 3:** Audio Engine Working - [N] DSP components implemented`
+- **Update "Next Steps":** Remove Stage 3 items, add Stage 4 GUI implementation items
+- **Update "Build Artifacts":** Verify binary paths still valid after rebuild
+
+### Step 4: Update PLUGINS.md
+
+Update both locations atomically:
+
+**Registry table:**
+```markdown
+| PluginName | 🚧 Stage 3 | 1.0.0 | [YYYY-MM-DD] |
+```
+
+**Full entry:**
+```markdown
+### PluginName
+**Status:** 🚧 Stage 3
+...
+**Lifecycle Timeline:**
+- **[YYYY-MM-DD] (Stage 3):** Audio Engine Working - DSP implementation complete
+
+**Last Updated:** [YYYY-MM-DD]
+```
+
+### Step 5: Report State Update in JSON
+
+Include state update status in the completion report:
+
+```json
+{
+  "agent": "dsp-agent",
+  "status": "success",
+  "outputs": {
+    "plugin_name": "[PluginName]",
+    "dsp_components": [...],
+    "processing_chain": "Input → Filter → Gain → Output"
+  },
+  "issues": [],
+  "ready_for_next_stage": true,
+  "stateUpdated": true
+}
+```
+
+**On state update error:**
+
+```json
+{
+  "agent": "dsp-agent",
+  "status": "success",
+  "outputs": {
+    "plugin_name": "[PluginName]",
+    ...
+  },
+  "issues": [],
+  "ready_for_next_stage": true,
+  "stateUpdated": false,
+  "stateUpdateError": "Failed to write .continue-here.md: [error message]"
+}
+```
+
+**Error handling:**
+
+If state update fails:
+1. Report implementation success but state update failure
+2. Set `stateUpdated: false`
+3. Include `stateUpdateError` with specific error message
+4. Orchestrator will attempt manual state update
+
 <json_report>
 ## JSON Report Format
 
