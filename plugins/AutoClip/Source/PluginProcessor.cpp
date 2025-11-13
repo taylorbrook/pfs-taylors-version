@@ -47,13 +47,33 @@ AutoClipAudioProcessor::~AutoClipAudioProcessor()
 //==============================================================================
 void AutoClipAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // DSP initialization will be added in Stage 3
-    juce::ignoreUnused(sampleRate, samplesPerBlock);
+    // Phase 4.1: Prepare lookahead delay lines (5ms fixed delay)
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
+    spec.numChannels = static_cast<juce::uint32>(getTotalNumOutputChannels());
+
+    lookaheadSamples = static_cast<int>(0.005 * sampleRate);  // 5ms in samples
+
+    lookaheadDelayL.prepare(spec);
+    lookaheadDelayR.prepare(spec);
+    lookaheadDelayL.setMaximumDelayInSamples(lookaheadSamples);
+    lookaheadDelayR.setMaximumDelayInSamples(lookaheadSamples);
+    lookaheadDelayL.reset();
+    lookaheadDelayR.reset();
+
+    // Phase 4.2: Prepare gain smoothing (50ms time constant)
+    smoothedGain.reset(sampleRate, 0.05);  // 50ms smoothing
+    smoothedGain.setCurrentAndTargetValue(1.0f);  // Default gain = 1.0
+
+    // Phase 4.3: Preallocate original buffer for clip solo
+    originalBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
+    originalBuffer.clear();
 }
 
 void AutoClipAudioProcessor::releaseResources()
 {
-    // DSP cleanup will be added in Stage 3
+    // Release large buffers to save memory when plugin not in use
+    originalBuffer.setSize(0, 0);
 }
 
 void AutoClipAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -61,22 +81,97 @@ void AutoClipAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     juce::ScopedNoDenormals noDenormals;
     juce::ignoreUnused(midiMessages);
 
-    // Parameter access (for Stage 3 DSP implementation):
-    // auto* clipThresholdParam = parameters.getRawParameterValue("clipThreshold");
-    // float clipThresholdValue = clipThresholdParam->load();  // Atomic read (real-time safe)
-    //
-    // auto* soloClippedParam = parameters.getRawParameterValue("soloClipped");
-    // bool soloClippedValue = soloClippedParam->load() > 0.5f;
+    // Read parameters (atomic, real-time safe)
+    auto* clipThresholdParam = parameters.getRawParameterValue("clipThreshold");
+    float clipThresholdPercent = clipThresholdParam->load();
+    float clipThreshold = clipThresholdPercent * 0.01f;  // Convert 0-100% to 0.0-1.0
 
-    // Pass-through for Stage 2 (DSP implementation happens in Stage 3)
-    // Audio routing is already handled by JUCE
+    auto* soloClippedParam = parameters.getRawParameterValue("soloClipped");
+    bool soloClipped = soloClippedParam->load() > 0.5f;
+
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
+
+    // Phase 4.3: Store original signal before processing
+    originalBuffer.setSize(numChannels, numSamples, false, false, true);
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        originalBuffer.copyFrom(channel, 0, buffer, channel, 0, numSamples);
+    }
+
+    // Phase 4.1 & 4.2: Process each channel
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        auto* channelData = buffer.getWritePointer(channel);
+        auto& delayLine = (channel == 0) ? lookaheadDelayL : lookaheadDelayR;
+
+        // Reset peak detectors for this block
+        inputPeak = 0.0f;
+        outputPeak = 0.0f;
+
+        // Process sample by sample
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            // Phase 4.1: Push input to lookahead buffer
+            delayLine.pushSample(channel, channelData[sample]);
+
+            // Phase 4.2: Analyze input peak from lookahead buffer (before clipping)
+            // Get delayed sample from lookahead
+            float delayedSample = delayLine.popSample(channel, lookaheadSamples);
+            inputPeak = juce::jmax(inputPeak, std::abs(delayedSample));
+
+            // Phase 4.1: Apply hard clipping
+            float clippedSample = juce::jlimit(-clipThreshold, clipThreshold, delayedSample);
+
+            // Phase 4.2: Analyze output peak from clipped signal
+            outputPeak = juce::jmax(outputPeak, std::abs(clippedSample));
+
+            // Store clipped sample (will apply gain in second pass)
+            channelData[sample] = clippedSample;
+        }
+    }
+
+    // Phase 4.2: Calculate gain compensation (after analyzing all channels)
+    float targetGain = 1.0f;
+    if (outputPeak > 0.001f && inputPeak > 0.001f)
+    {
+        targetGain = inputPeak / outputPeak;  // Restore to input peak level
+    }
+    smoothedGain.setTargetValue(targetGain);
+
+    // Apply smoothed gain to all channels
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        auto* channelData = buffer.getWritePointer(channel);
+
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            float currentGain = smoothedGain.getNextValue();
+            channelData[sample] *= currentGain;
+        }
+    }
+
+    // Phase 4.3: Clip solo routing (output difference signal if enabled)
+    if (soloClipped)
+    {
+        for (int channel = 0; channel < numChannels; ++channel)
+        {
+            auto* outputData = buffer.getWritePointer(channel);
+            auto* originalData = originalBuffer.getReadPointer(channel);
+
+            for (int sample = 0; sample < numSamples; ++sample)
+            {
+                // Difference signal = original - clipped_with_gain
+                outputData[sample] = originalData[sample] - outputData[sample];
+            }
+        }
+    }
 }
 
 int AutoClipAudioProcessor::getLatencySamples() const
 {
-    // 5ms lookahead at 48kHz = 240 samples (placeholder)
-    // Stage 3 will calculate dynamically: static_cast<int>(0.005 * getSampleRate())
-    return 240;
+    // Return actual lookahead delay (calculated in prepareToPlay)
+    return lookaheadSamples;
 }
 
 //==============================================================================
