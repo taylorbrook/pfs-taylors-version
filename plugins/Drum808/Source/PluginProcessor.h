@@ -61,10 +61,62 @@ private:
         }
     };
 
+    // Kick Voice structure
+    struct KickVoice
+    {
+        juce::dsp::Oscillator<float> bodyOscillator;
+        juce::Random noiseGenerator;
+
+        bool isPlaying = false;
+        float envelopeTime = 0.0f;
+        float velocity = 0.0f;
+
+        void trigger(float velocityGain)
+        {
+            isPlaying = true;
+            envelopeTime = 0.0f;
+            velocity = velocityGain;
+        }
+
+        void stop()
+        {
+            isPlaying = false;
+            envelopeTime = 0.0f;
+        }
+    };
+
+    // Hi-Hat Voice structure (shared by Closed and Open)
+    struct HiHatVoice
+    {
+        // 6 square wave oscillators for metallic inharmonic spectrum
+        juce::dsp::Oscillator<float> oscillators[6];
+        juce::dsp::StateVariableTPTFilter<float> filter;
+
+        bool isPlaying = false;
+        float envelopeTime = 0.0f;
+        float velocity = 0.0f;
+
+        void trigger(float velocityGain)
+        {
+            isPlaying = true;
+            envelopeTime = 0.0f;
+            velocity = velocityGain;
+        }
+
+        void stop()
+        {
+            isPlaying = false;
+            envelopeTime = 0.0f;
+        }
+    };
+
     // DSP Components (BEFORE APVTS for initialization order)
     juce::dsp::ProcessSpec spec;
     TomVoice lowTom;
     TomVoice midTom;
+    KickVoice kick;
+    HiHatVoice closedHat;
+    HiHatVoice openHat;
 
     double currentSampleRate = 44100.0;
 
