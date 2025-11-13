@@ -23,9 +23,17 @@ target_include_directories(AutoClip
         Source
 )
 
+# WebView UI Resources (embed HTML/CSS/JS into binary)
+juce_add_binary_data(AutoClip_UIResources
+    SOURCES
+        Source/ui/public/index.html
+        Source/ui/public/js/juce/index.js
+)
+
 # Required JUCE modules
 target_link_libraries(AutoClip
     PRIVATE
+        AutoClip_UIResources  # Link UI resources
         juce::juce_audio_basics
         juce::juce_audio_devices
         juce::juce_audio_formats

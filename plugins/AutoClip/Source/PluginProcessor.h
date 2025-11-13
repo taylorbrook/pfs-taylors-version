@@ -30,9 +30,6 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    // Latency reporting for 5ms lookahead
-    int getLatencySamples() const override;
-
     // Public APVTS for editor binding
     juce::AudioProcessorValueTreeState parameters;
 

@@ -168,12 +168,6 @@ void AutoClipAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
     }
 }
 
-int AutoClipAudioProcessor::getLatencySamples() const
-{
-    // Return actual lookahead delay (calculated in prepareToPlay)
-    return lookaheadSamples;
-}
-
 //==============================================================================
 // Editor Creation
 //==============================================================================
