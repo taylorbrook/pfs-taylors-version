@@ -256,16 +256,326 @@ See `references/state-management.md` for `checkStagePreconditions()` function.
   2. Check preconditions → If failed, BLOCK with reason
   3. **MANDATORY: design-sync validation before Stage 2** → BLOCK if drift detected
   4. Route to subagent based on stage number:
-     - Stage 2 → foundation-agent
-     - Stage 3 → shell-agent
-     - Stage 4 → dsp-agent
-     - Stage 5 → gui-agent
-     - Stage 6 → validator (or direct execution)
+     - Stage 2 → foundation-agent (single-pass)
+     - Stage 3 → shell-agent (single-pass)
+     - Stage 4 → dsp-agent (phase-aware dispatch)
+     - Stage 5 → gui-agent (phase-aware dispatch)
+     - Stage 6 → validator (single-pass or direct execution)
   5. Pass contracts and Required Reading to subagent
   6. Wait for subagent completion
 
   See [references/dispatcher-pattern.md](references/dispatcher-pattern.md) for full pseudocode.
 </dispatcher_pattern>
+
+<phase_aware_dispatch stages="4,5" enforcement_level="MANDATORY">
+  **Purpose:** Prevent "implement all phases" errors by detecting and looping phases for complex plugins.
+
+  **When:** Before invoking dsp-agent (Stage 4) or gui-agent (Stage 5)
+
+  **Applies to:** Stages 4 and 5 only. Stages 2, 3, and 6 remain single-pass.
+
+  <phase_detection_algorithm>
+    **Determine if phased implementation is needed:**
+
+    ```typescript
+    // 1. Read plan.md to check for phases
+    const planContent = readFile(`plugins/${pluginName}/.ideas/plan.md`);
+
+    // 2. Extract complexity score
+    const complexityMatch = planContent.match(/\*\*Complexity Score:\*\*\s+([\d.]+)/);
+    const complexityScore = complexityMatch ? parseFloat(complexityMatch[1]) : 0;
+
+    // 3. Check for phase markers based on current stage
+    const stagePhasePattern = currentStage === 4
+      ? /### Phase 4\.\d+/g
+      : /### Phase 5\.\d+/g;
+
+    const hasPhases = stagePhasePattern.test(planContent);
+
+    // 4. Determine execution strategy
+    const needsPhasedImplementation = complexityScore >= 3 && hasPhases;
+
+    console.log(`Complexity: ${complexityScore}, Has phases: ${hasPhases}`);
+    console.log(`Execution mode: ${needsPhasedImplementation ? "PHASED" : "SINGLE-PASS"}`);
+    ```
+  </phase_detection_algorithm>
+
+  <routing_decision>
+    **Based on detection results, route to appropriate handler:**
+
+    <single_pass_condition>
+      **IF complexity < 3 OR no phase markers found:**
+
+      1. Invoke subagent ONCE for entire stage
+      2. Use prompt template from reference file single-pass section:
+         - Stage 4: `references/stage-4-dsp.md` lines 45-87 (single-pass implementation)
+         - Stage 5: `references/stage-5-gui.md` lines 83-135 (single-pass implementation)
+      3. Checkpoint after stage completes (standard 6-step checkpoint)
+      4. Present decision menu (continue to next stage, pause, test, etc.)
+    </single_pass_condition>
+
+    <phased_implementation_condition>
+      **IF complexity ≥3 AND phase markers found:**
+
+      **Phase parsing:**
+      ```typescript
+      // Extract all phases for current stage from plan.md
+      const phasePattern = currentStage === 4
+        ? /### Phase (4\.\d+):\s*(.+?)$/gm
+        : /### Phase (5\.\d+):\s*(.+?)$/gm;
+
+      const phases = [];
+      let match;
+      while ((match = phasePattern.exec(planContent)) !== null) {
+        phases.push({
+          number: match[1],        // e.g., "4.1" or "5.1"
+          description: match[2]    // e.g., "Voice Architecture" or "Layout and Basic Controls"
+        });
+      }
+
+      console.log(`Stage ${currentStage} will execute in ${phases.length} phases:`);
+      phases.forEach(phase => {
+        console.log(`  - Phase ${phase.number}: ${phase.description}`);
+      });
+      ```
+
+      **Phase execution loop:**
+      ```typescript
+      for (let i = 0; i < phases.length; i++) {
+        const phase = phases[i];
+
+        console.log(`\n━━━ Stage ${phase.number} - ${phase.description} ━━━\n`);
+
+        // Invoke subagent for THIS PHASE ONLY
+        const phaseResult = Task({
+          subagent_type: currentStage === 4 ? "dsp-agent" : "gui-agent",
+          description: `Implement Phase ${phase.number} for ${pluginName}`,
+          prompt: constructPhasePrompt(phase, pluginName, currentStage, phases.length)
+        });
+
+        // Parse subagent report
+        const phaseReport = parseSubagentReport(phaseResult);
+
+        // Validate phase completion
+        if (!phaseReport || phaseReport.status === "failure") {
+          console.log(`✗ Phase ${phase.number} (${phase.description}) failed`);
+          presentPhaseFailureMenu(phase, phaseReport);
+          return; // BLOCK progression - do not continue to next phase
+        }
+
+        // Phase succeeded
+        console.log(`✓ Phase ${phase.number} complete: ${phase.description}`);
+        console.log(`  - Components: ${phaseReport.outputs.components_this_phase?.join(", ") || "N/A"}`);
+
+        // CHECKPOINT: Commit phase changes
+        commitPhase(pluginName, phase, i + 1, phases.length);
+
+        // CHECKPOINT: Update handoff file
+        updateHandoff(
+          pluginName,
+          currentStage,
+          phase.number,
+          `Phase ${phase.number} complete: ${phase.description}`,
+          i < phases.length - 1
+            ? [`Continue to Phase ${phases[i + 1].number}`, "Review phase code", "Test", "Pause"]
+            : ["Continue to Stage " + (currentStage + 1), "Review complete stage", "Test", "Pause"]
+        );
+
+        // CHECKPOINT: Update plugin status
+        updatePluginStatus(pluginName, `🚧 Stage ${phase.number}`);
+
+        // CHECKPOINT: Update plan.md with phase completion timestamp
+        const timestamp = new Date().toISOString();
+        updatePlanMd(pluginName, phase.number, timestamp);
+
+        // CHECKPOINT: Verify all steps completed
+        verifyPhaseCheckpoint(pluginName, phase.number);
+
+        // DECISION MENU: Present between phases (BLOCKING)
+        if (i < phases.length - 1) {
+          console.log(`
+✓ Phase ${phase.number} complete
+
+Progress: ${i + 1} of ${phases.length} phases complete
+
+What's next?
+
+1. Continue to Phase ${phases[i + 1].number} (recommended)
+2. Review Phase ${phase.number} code
+3. Test current implementation
+4. Pause here
+5. Other
+
+Choose (1-5): _
+          `);
+
+          const choice = getUserInput(); // BLOCKING WAIT
+          if (choice === "4" || choice.toLowerCase() === "pause") {
+            console.log(`\n⏸ Paused between phases. Resume with /continue ${pluginName}`);
+            return; // Exit workflow, state saved for resume
+          }
+          // Other choices handled by menu router
+        }
+      }
+
+      console.log(`\n✓ All ${phases.length} phases complete for Stage ${currentStage}!`);
+      ```
+
+      **After ALL phases complete:**
+      1. Commit final stage state (if not already committed)
+      2. Update handoff to next stage
+      3. Update plugin status to reflect stage completion
+      4. Present stage completion decision menu
+      5. WAIT for user response
+    </phased_implementation_condition>
+  </routing_decision>
+
+  <prompt_construction>
+    **For each phase invocation, construct phase-specific prompt:**
+
+    ```typescript
+    function constructPhasePrompt(phase, pluginName, currentStage, totalPhases) {
+      // Read Required Reading (MANDATORY for all subagents)
+      const criticalPatterns = readFile("troubleshooting/patterns/juce8-critical-patterns.md");
+
+      // Read contracts
+      const architectureMd = readFile(`plugins/${pluginName}/.ideas/architecture.md`);
+      const parameterSpecMd = readFile(`plugins/${pluginName}/.ideas/parameter-spec.md`);
+      const planMd = readFile(`plugins/${pluginName}/.ideas/plan.md`);
+
+      // Stage-specific additional contracts
+      const creativeBriefMd = currentStage === 5
+        ? readFile(`plugins/${pluginName}/.ideas/creative-brief.md`)
+        : null;
+
+      const mockupPath = currentStage === 5
+        ? findLatestMockup(pluginName)
+        : null;
+
+      return `CRITICAL PATTERNS (MUST FOLLOW):
+
+${criticalPatterns}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement Phase ${phase.number} for plugin at plugins/${pluginName}.
+
+**Current Phase:** ${phase.number} - ${phase.description}
+**Total Phases:** ${totalPhases}
+**Plugin Name:** ${pluginName}
+
+**Contracts:**
+- architecture.md:
+${architectureMd}
+
+- parameter-spec.md:
+${parameterSpecMd}
+
+- plan.md (Phase ${phase.number} section):
+${planMd}
+
+${currentStage === 5 ? `
+- creative-brief.md:
+${creativeBriefMd}
+
+- UI Mockup: ${mockupPath}
+` : ''}
+
+**Tasks for Phase ${phase.number}:**
+1. Read plan.md and extract Phase ${phase.number} components ONLY
+2. Read architecture.md for component specifications
+${currentStage === 4 ? `3. Add member variables for Phase ${phase.number} DSP components
+4. Implement Phase ${phase.number} components in processBlock()
+5. Build on existing code from previous phases (do NOT remove previous work)
+6. Connect Phase ${phase.number} parameters only
+7. Ensure real-time safety (no allocations, use juce::ScopedNoDenormals)` : `3. Implement UI elements for Phase ${phase.number}
+4. Add parameter bindings for Phase ${phase.number} controls
+5. Build on existing UI from previous phases (do NOT remove previous work)
+6. Verify member order (Relays → WebView → Attachments)
+7. Ensure all Phase ${phase.number} parameter IDs match HTML element IDs`}
+8. Update plan.md with phase completion timestamp
+9. Return JSON report with phase_completed: "${phase.number}"
+
+**CRITICAL:** Implement ONLY Phase ${phase.number} components. Preserve all code from previous phases.
+
+Build verification handled by workflow after agent completes.
+`;
+    }
+    ```
+
+    **Key differences from single-pass prompt:**
+    - Explicitly states current phase number and description
+    - Emphasizes "THIS PHASE ONLY" - not all phases
+    - Reminds to preserve previous phase code
+    - Includes phase completion timestamp requirement
+    - JSON report must include phase_completed field
+  </prompt_construction>
+
+  <error_prevention>
+    <anti_pattern severity="CRITICAL">
+      **The problem this solves:**
+
+      ❌ **NEVER send** "Implement ALL phases" to subagent
+      - Causes compilation errors from attempting too much
+      - Led to DrumRoulette Stage 5 failure (3 phases → single invocation → build errors)
+      - Violates incremental implementation principle
+
+      ✓ **ALWAYS invoke** subagent once per phase with phase-specific prompt
+      - One phase at a time, sequential execution
+      - Checkpoint after EACH phase
+      - User confirmation between phases
+      - Incremental testing and validation
+    </anti_pattern>
+
+    <enforcement>
+      **Phase-aware dispatch is MANDATORY for Stages 4-5 when:**
+      1. Complexity score ≥3 (from plan.md)
+      2. Phase markers exist in plan.md (### Phase 4.X or ### Phase 5.X)
+
+      **Phase-aware dispatch is SKIPPED for Stages 4-5 when:**
+      1. Complexity score <3 (simple plugin, single-pass sufficient)
+      2. No phase markers in plan.md (plan didn't define phases)
+
+      **Phase-aware dispatch DOES NOT APPLY to:**
+      - Stage 2 (Foundation) - always single-pass
+      - Stage 3 (Shell) - always single-pass
+      - Stage 6 (Validation) - always single-pass
+
+      **The orchestrator MUST:**
+      - Read plan.md to detect phases BEFORE invoking subagent
+      - Parse ALL phases for the stage
+      - Loop through phases sequentially
+      - Present decision menu after EACH phase
+      - WAIT for user confirmation before next phase
+
+      **The orchestrator MUST NOT:**
+      - Skip phase detection (this is mandatory control flow)
+      - Invoke subagent with multiple phases at once
+      - Auto-proceed between phases without user confirmation
+      - Reference stage-4-dsp.md or stage-5-gui.md reference files for control flow (those are documentation/templates only)
+    </enforcement>
+  </error_prevention>
+
+  <integration_with_checkpoint_protocol>
+    **Phase checkpoints are identical to stage checkpoints:**
+
+    After each phase completes:
+    1. ✓ Commit phase changes (git commit with phase number)
+    2. ✓ Update handoff (.continue-here.md with current phase)
+    3. ✓ Update plugin status (PLUGINS.md with phase emoji)
+    4. ✓ Update plan.md (phase completion timestamp)
+    5. ✓ Verify checkpoint succeeded (all files updated)
+    6. ✓ Present decision menu (BLOCKING)
+
+    This mirrors the standard checkpoint protocol (lines 82-85, 338-443) but executes after EACH phase instead of EACH stage.
+
+    **Why this matters:**
+    - User can pause between phases (not just between stages)
+    - State is saved incrementally (phase-level granularity)
+    - Build failures isolated to single phase (easier to debug)
+    - /continue can resume mid-stage at specific phase
+  </integration_with_checkpoint_protocol>
+</phase_aware_dispatch>
 
 <design_sync_gate enforcement_level="MANDATORY">
   **Purpose:** Prevent design drift before implementation begins.
@@ -1024,9 +1334,22 @@ Choose (1-4): _
       ✓ ALWAYS use Task tool to invoke appropriate subagent
     </anti_pattern>
 
+    <anti_pattern severity="CRITICAL" ref="phase-aware-dispatch">
+      ❌ Sending "Implement ALL phases" to subagent for Stages 4-5
+      ✓ ALWAYS detect phases in plan.md and loop through them one at a time
+
+      This error caused DrumRoulette Stage 5 to fail with compilation errors.
+      Phase-aware dispatch (lines 270-578) is MANDATORY for complex plugins.
+    </anti_pattern>
+
     <anti_pattern severity="CRITICAL">
       ❌ Auto-proceeding without user confirmation
       ✓ ALWAYS wait for menu choice after presenting options
+    </anti_pattern>
+
+    <anti_pattern severity="HIGH">
+      ❌ Skipping phase detection for Stages 4-5 when complexity ≥3
+      ✓ Read plan.md to check for phases BEFORE invoking dsp-agent or gui-agent
     </anti_pattern>
 
     <anti_pattern severity="HIGH">

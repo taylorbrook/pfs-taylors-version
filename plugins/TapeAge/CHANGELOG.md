@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **Volume Compensation:** Drive knob now maintains constant output level via automatic makeup gain
+  - Makeup gain = `1.0 / tanh(gain)` applied after saturation
+  - Output volume stays consistent regardless of drive setting
+  - Allows focus on tonal character without volume changes
+
 - **Enhanced AGE Parameter:** More extreme tape degradation at maximum settings
   - **Increased Wow Depth:** ±25 cents pitch variation (was ±10 cents) - 2.5x more warble for noticeable vintage character while remaining musical
   - **Dual-LFO Flutter:** Added 6Hz secondary flutter LFO at 20% depth for richer texture alongside primary 1-2Hz wow LFO
