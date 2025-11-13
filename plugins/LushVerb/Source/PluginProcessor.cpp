@@ -174,8 +174,11 @@ void LushVerbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
                 float pitchShiftedSample = overlapData[hopCounter];
                 overlapData[hopCounter] = 0.0f; // Clear for next overlap
 
-                // Mix dry and pitch-shifted signal based on shimmer amount
-                channelData[sample] = channelData[sample] * (1.0f - shimmerAmount) + pitchShiftedSample * shimmerAmount;
+                // Add pitch-shifted signal to dry signal (parallel mix, not crossfade)
+                // At 0%: dry only (no shimmer added)
+                // At 50%: dry + 50% shimmer (both present)
+                // At 100%: dry + 100% shimmer (maximum shimmer layer)
+                channelData[sample] = channelData[sample] + (pitchShiftedSample * shimmerAmount);
 
                 // Increment hop counter
                 hopCounter++;
@@ -194,15 +197,15 @@ void LushVerbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
                     fft->performRealOnlyForwardTransform(fftData, true);
 
                     // Pitch shift by +1 octave (frequency doubling)
-                    // Method: Read every other bin (bin stretching)
+                    // Method: Double the bin index (read from higher frequencies)
                     // Clear shifted buffer first
                     for (int i = 0; i < fftSize * 2; ++i)
                         shiftedFFTData[i] = 0.0f;
 
                     for (int i = 0; i < fftSize / 2; ++i)
                     {
-                        int sourceIndex = i / 2; // Half the frequency bins for octave up
-                        if (sourceIndex < fftSize / 4)
+                        int sourceIndex = i * 2; // FIXED: Double bin index for octave up
+                        if (sourceIndex < fftSize)
                         {
                             shiftedFFTData[i * 2] = fftData[sourceIndex * 2];         // Real
                             shiftedFFTData[i * 2 + 1] = fftData[sourceIndex * 2 + 1]; // Imaginary
@@ -213,9 +216,11 @@ void LushVerbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce
                     fft->performRealOnlyInverseTransform(shiftedFFTData);
 
                     // Window and overlap-add
+                    // FIXED: Remove fftSize division (JUCE IFFT already normalizes)
+                    // Added 2.0x compensation for Hann window 50% overlap
                     for (int i = 0; i < fftSize; ++i)
                     {
-                        overlapData[i] += shiftedFFTData[i * 2] * hannWindow[i] / (float)fftSize;
+                        overlapData[i] += shiftedFFTData[i * 2] * hannWindow[i] * 2.0f;
                     }
 
                     // Shift input buffer (overlap)

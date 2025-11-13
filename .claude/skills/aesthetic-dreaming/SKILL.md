@@ -1,6 +1,6 @@
 ---
 name: aesthetic-dreaming
-description: Create aesthetic templates without first creating a plugin - capture visual design concepts through adaptive questioning
+description: Create aesthetic templates without first creating a plugin - capture visual design concepts through adaptive questioning. Use when you want to build a library of visual systems before plugin implementation.
 allowed-tools:
   - Read
   - Write
@@ -74,7 +74,7 @@ You can reference existing designs, describe feelings, or provide technical spec
 </extraction_targets>
 
 <state_requirement>
-MUST accumulate all extracted concepts in persistent context. This context carries forward through ALL phases and question batches. NEVER lose information from previous phases.
+**Context Storage**: Maintain cumulative context as structured object in agent memory throughout all phases and question batches. Format: key-value pairs for each design dimension (vibe, color_philosophy, control_style, typography, spacing, etc.). NEVER overwrite existing keys - only append new information. NEVER lose information from previous phases.
 </state_requirement>
 </phase>
 
@@ -137,7 +137,7 @@ See references/question-examples.md for detailed AskUserQuestion formatting exam
 
 <state_transition>
 After receiving question batch answers:
-1. Merge answers with accumulated context (cumulative, never overwrite)
+1. Merge answers into accumulated context object by appending to relevant keys (e.g., answer "Dark with blue accents" → context.color_philosophy = "Dark with blue accents"). Preserve all previous keys. Never overwrite existing information.
 2. Proceed DIRECTLY to decision gate (Phase 3.5)
 3. Decision gate will route to Phase 2 (re-analyze) or Phase 3.7 (finalize)
 </state_transition>
@@ -145,7 +145,7 @@ After receiving question batch answers:
 
 ---
 
-<decision_gate id="finalize_or_continue" phase="3.5" enforcement="blocking">
+<decision_gate id="finalize_or_continue" phase="3.5">
 <critical_sequence>
 MUST present this decision gate after EVERY question batch (Phase 3).
 MUST use AskUserQuestion tool (not inline numbered list).
@@ -205,7 +205,8 @@ ELSE ask user for name via AskUserQuestion with 3 suggested names + "Other" opti
 <slug_generation>
 - Slugify name: "Modern Professional" → "modern-professional"
 - Check for existing IDs in manifest.json and append counter: "modern-professional-001"
-- Increment until unique ID found
+- Increment suffix from -001 to -999 until unique ID found
+- If all suffixes exhausted (aesthetic has 999+ versions), ask user to provide alternative name
 </slug_generation>
 </phase>
 
@@ -263,31 +264,66 @@ MUST execute steps in this exact order (no parallelization):
 8. Present confirmation (requires git commit complete)
 </critical_sequence>
 
+<progress_tracking>
+Copy this checklist to track Phase 5 progress:
+
+```
+Phase 5 Progress:
+- [ ] Step 1: Read aesthetic template
+- [ ] Step 2: Generate prose from context
+- [ ] Step 3: Write aesthetic.md file
+- [ ] Step 4: Generate metadata.json
+- [ ] Step 5: Generate test previews (if selected)
+- [ ] Step 6: Update manifest.json
+- [ ] Step 7: Commit to git
+- [ ] Step 8: Present confirmation
+```
+
+**Critical**: Execute steps sequentially. Each step requires output from previous step.
+</progress_tracking>
+
 <step id="1">
 Read template: /Users/lexchristopherson/Developer/plugin-freedom-system/.claude/skills/ui-template-library/assets/aesthetic-template.md
 </step>
 
 <step id="2">
 <prose_generation_requirements>
-Transform accumulated context into interpretable prose, NOT rigid specifications.
+Transform accumulated context into descriptive prose following template structure. Balance prose descriptions with concrete examples (specific colors, sizes, values).
 
-MUST follow these principles:
-- Be descriptive: "Generous spacing with 32px gaps" NOT "spacing: 32px"
-- Capture intent: "Warm brass controls evoking vintage hardware" NOT "color: #d4a574"
-- Explain WHY: Describe reasoning behind design choices
-- Include examples: Balance prose with concrete values (colors, sizes)
-- Follow template structure: All 12 sections, same order, every time
-
-See ui-template-library/assets/aesthetic-template.md for exact section structure.
+See [ui-template-library/assets/aesthetic-template.md](ui-template-library/assets/aesthetic-template.md) for section structure. ui-template-library handles interpretation and application.
 </prose_generation_requirements>
 </step>
 
 <step id="3">
 Write aesthetic.md to: .claude/aesthetics/[aesthetic-id]/aesthetic.md
+
+<verification>
+Before proceeding to Step 4:
+- File exists at expected path
+- File size >1KB (indicates content written, not empty file)
+- All 12 template sections present in file
+</verification>
 </step>
 
 <step id="4">
-Generate metadata.json with: id, name, description, created timestamp, tags (inferred from context), isTemplateOnly: true, testPreviews array
+<instructions>
+Generate metadata.json with: id, name, description, created timestamp, tags, isTemplateOnly: true, testPreviews array
+
+**Tag Inference Rules**: Extract tags from accumulated context:
+- Vibe keywords (modern, vintage, minimal, bold, etc.)
+- Color family (dark, light, blue, warm, cool, etc.)
+- Plugin type mentions (compressor, reverb, synth, etc.)
+- Control style (flat, 3D, skeuomorphic, etc.)
+
+Example: "Dark modern blue flat controls" → tags: ["dark", "modern", "blue", "flat"]
+</instructions>
+
+<verification>
+Before proceeding to Step 5:
+- metadata.json exists at .claude/aesthetics/[aesthetic-id]/metadata.json
+- File contains valid JSON (parseable)
+- Required fields present: id, name, description, created, tags, isTemplateOnly
+</verification>
 </step>
 
 <step id="5">
@@ -300,11 +336,27 @@ IF test previews selected in Phase 4 THEN:
   END FOR
 END IF
 </conditional_execution>
+
+<verification>
+Before proceeding to Step 6:
+IF test previews were selected:
+- All selected preview HTML files exist in test-previews/ subdirectory
+- Each file size >2KB (indicates content, not empty)
+- ui-template-library invocations returned success status
+</verification>
+
 See references/test-preview-protocol.md for detailed invocation protocol.
 </step>
 
 <step id="6">
 Read .claude/aesthetics/manifest.json, append new aesthetic entry, write updated manifest.
+
+<verification>
+Before proceeding to Step 7:
+- manifest.json exists and is valid JSON
+- New aesthetic entry present in manifest array
+- Entry contains all required metadata fields
+</verification>
 </step>
 
 <step id="7">
@@ -354,6 +406,13 @@ git commit -m "feat(aesthetics): [aesthetic-name] - new aesthetic template
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 </commit_format>
+
+<verification>
+Before proceeding to Step 8:
+- Git status shows clean working directory (all files committed)
+- Commit exists in git log with expected message format
+- No uncommitted changes remain
+</verification>
 </step>
 
 <step id="8">
@@ -369,7 +428,7 @@ This is a system checkpoint. MUST follow Plugin Freedom System checkpoint protoc
 MUST use inline numbered list format (NOT AskUserQuestion tool) per CLAUDE.md checkpoint protocol.
 </checkpoint_protocol>
 
-<decision_menu format="inline_numbered_list">
+<decision_menu>
 ✅ Aesthetic "[Name]" ready!
 
 What's next?
@@ -403,112 +462,20 @@ MUST wait for user response. NEVER auto-proceed to any option.
 ---
 
 <adaptive_questioning_strategy>
-<critical_sequence>
-This is the core algorithm for gap-driven questioning:
+**Core Algorithm**: Extract concepts → Check tier coverage → Identify gaps → Generate 4 questions → Decision gate → Loop or finalize
 
-1. Extract concepts from user input (Phase 1 or additional context)
-2. Check coverage against tier system (Tier 1 → Tier 2 → Tier 3)
-3. Identify gaps (missing concepts by tier priority)
-4. Generate 4 questions targeting highest-priority gaps (Phase 3)
-5. Present decision gate (Phase 3.5)
-6. IF continue THEN repeat steps 2-5 with accumulated context
-7. IF finalize THEN proceed to Phase 3.7
+**Anti-pattern**: Never ask about concepts already provided. Never repeat questions in different words.
 
-NEVER ask about concepts already provided.
-NEVER repeat questions in different words.
-ALWAYS extract maximum information from each user response.
-</critical_sequence>
+**Tier Priority**: Tier 1 (Critical: vibe, color philosophy, control style) → Tier 2 (Visual Core: specific colors, typography, spacing, textures) → Tier 3 (Context: plugin types, inspirations, special features)
 
-<example>
-User says: "I want a sleek, dark interface with neon blue accents and flat modern controls."
-
-**Extraction:**
-- Vibe: sleek, dark, modern
-- Color: neon blue accents
-- Controls: flat
-
-**Gaps identified (by tier):**
-- Typography choices? (Tier 2)
-- Spacing philosophy? (Tier 2)
-- Surface textures? (Tier 2)
-- Best plugin types? (Tier 3)
-
-**Generate 4 questions targeting these gaps.**
-</example>
-
-See references/aesthetic-questions.md for detailed gap analysis strategies.
+See [references/aesthetic-questions.md](references/aesthetic-questions.md) for detailed gap analysis strategies and question banks. See [references/workflow-examples.md](references/workflow-examples.md) for complete examples.
 </adaptive_questioning_strategy>
 
 ---
 
 ## Question Generation Examples
 
-### Example 1: Detailed Input
-
-```
-User: "I want a vintage analog aesthetic with brass knobs, warm earth tones, and a subtle paper texture. Should feel like 1960s hardware."
-
-Extracted:
-- Vibe: Vintage analog, 1960s hardware ✓
-- Color philosophy: Warm earth tones ✓
-- Control style: Brass knobs ✓
-- Surface: Paper texture ✓
-- Typography: Not mentioned ✗
-- Specific colors: Earth tones (generic) ✗
-- Spacing: Not mentioned ✗
-- Best for: Not mentioned ✗
-
-Gaps identified (4 needed):
-- Specific earth tone colors? (Tier 2)
-- Typography approach? (Tier 2)
-- Spacing density? (Tier 2)
-- Best suited for what plugins? (Tier 3)
-
-Question Batch 1:
-1. "What specific earth tone palette?" → [Orange/brown/cream, Brown/tan/beige, Green/olive/khaki, Other]
-2. "Typography approach?" → [Technical sans-serif, Classic serif, Vintage typewriter, Other]
-3. "Spacing density?" → [Tight vintage, Comfortable balanced, Generous spacious, Other]
-4. "Best suited for what plugins?" → [Tape/analog effects, Vintage compressors, All warm effects, Other]
-```
-
-### Example 2: Vague Input
-
-```
-User: "A clean modern aesthetic"
-
-Extracted:
-- Vibe: Clean, modern ✓
-- Everything else: Not mentioned ✗
-
-Gaps identified (4 needed):
-- Color philosophy? (Tier 1)
-- Control style? (Tier 1)
-- Specific colors? (Tier 2)
-- Typography? (Tier 2)
-
-Question Batch 1:
-1. "Color philosophy?" → [Dark with bright accents, Light with dark accents, Monochromatic, Other]
-2. "Control styling?" → [Flat 2D, Subtle 3D, Skeuomorphic, Other]
-3. "Primary color?" → [Blue professional, Gray neutral, Green organic, Other]
-4. "Typography approach?" → [Technical/readable, Decorative/bold, Minimal/light, Other]
-
-[Then decision gate]
-
-If user chooses "Ask me 4 more questions":
-- User answered: "Dark with bright accents", "Flat 2D", "Blue professional", "Technical/readable"
-
-Updated context:
-- Vibe: Clean, modern ✓
-- Color: Dark with blue accents ✓
-- Controls: Flat 2D ✓
-- Typography: Technical/readable ✓
-
-New gaps for Batch 2:
-- Specific blue shade? (Tier 2)
-- Spacing preference? (Tier 2)
-- Surface treatment? (Tier 2)
-- Best suited for? (Tier 3)
-```
+See [references/workflow-examples.md](references/workflow-examples.md) for detailed examples showing adaptive questioning across different input scenarios (detailed vs. vague, single iteration vs. multi-iteration).
 
 ---
 
@@ -608,59 +575,9 @@ Skill is successful when:
 
 ---
 
-## Implementation Notes
+## Design Rationale
 
-### Why This Approach Works
-
-**1. Adaptive questioning matches plugin-ideation pattern:**
-- Free-form collection first (capture everything)
-- Gap analysis identifies missing pieces
-- Questions generated contextually, not from rigid script
-- Decision gate allows iteration or finalization
-
-**2. Visual design tiers make sense:**
-- Tier 1 (Critical): Vibe, color philosophy, control style
-- Tier 2 (Visual Core): Specific colors, typography, spacing, textures
-- Tier 3 (Context): Best suited for, inspirations, special features
-
-**3. Test previews solve the visualization problem:**
-- User can see aesthetic applied to real layouts
-- Multiple parameter counts demonstrate flexibility
-- Optional (user can skip if they just want prose description)
-
-**4. Integration with ui-template-library:**
-- aesthetic-dreaming creates the aesthetic.md
-- ui-template-library interprets and applies it
-- Separation of concerns: creation vs application
-
-### Format Consistency
-
-**aesthetic.md structure:**
-- Exactly 12 sections in fixed order
-- Prose descriptions with concrete examples
-- Interpretable by both humans and Claude
-- Human-editable, machine-parseable
-
-**Test previews:**
-- Stored in test-previews/ subdirectory
-- Named by plugin type: simple-compressor.html
-- Standalone HTML files (open in browser)
-- Demonstrate aesthetic across different layouts
-
-### Quality Control
-
-**Before saving aesthetic:**
-- ✅ Verify all template sections are present
-- ✅ Check for placeholder text not replaced
-- ✅ Validate color codes are valid hex/rgb
-- ✅ Ensure prose is descriptive (not just values)
-- ✅ Confirm aesthetic ID is unique
-
-**Before generating test previews:**
-- ✅ Verify test plugin specs exist
-- ✅ Check ui-template-library skill is available
-- ✅ Ensure aesthetic.md is complete
-- ✅ Validate output directory exists
+See [references/design-rationale.md](references/design-rationale.md) for detailed explanation of design decisions, format consistency rules, and quality control procedures.
 
 ---
 
