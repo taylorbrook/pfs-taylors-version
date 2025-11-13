@@ -544,9 +544,10 @@ Granular reversed delay with beautiful stuttering grains, randomized pitch (quan
 
 ### MinimalKick
 
-**Status:** 🚧 Stage 0
+**Status:** 🚧 Stage 1
 **Type:** Synth
 **Created:** 2025-11-12
+**Complexity:** 5.0 (Complex - phased implementation)
 
 **Description:**
 Minimal house kick drum synthesizer with sine wave + pitch envelope architecture for deep, subby kicks that sit perfectly in minimal and tech house tracks.
@@ -558,15 +559,24 @@ Minimal house kick drum synthesizer with sine wave + pitch envelope architecture
 - Decay: 50-2000 ms, default 400 ms (amplitude envelope decay)
 - Drive: 0-100%, default 20% (saturation/harmonics)
 
+**DSP:** Sine oscillator + exponential pitch envelope + AD amplitude envelope + tanh saturation. Monophonic, retriggerable. Estimated CPU: ~11% single core.
+
+**Implementation Strategy:** Phased (6 phases: 3 DSP + 3 GUI)
+- Stage 4.1: Core synthesis (oscillator + MIDI + amplitude)
+- Stage 4.2: Pitch envelope (custom exponential - highest risk)
+- Stage 4.3: Saturation/drive
+- Stage 5.1-5.3: WebView UI (layout, binding, polish)
+
 **Lifecycle Timeline:**
 - **2025-11-12:** Creative brief completed
 - **2025-11-12:** UI mockup v2 finalized (5 knobs, vintage hardware aesthetic)
 - **2025-11-12 (Stage 0):** Research completed - DSP architecture documented (Tier 4, 6 features)
+- **2025-11-13 (Stage 1):** Planning completed - Complexity 5.0, 6-phase implementation plan created
 
 **Known Issues:**
 - None
 
-**Last Updated:** 2025-11-12
+**Last Updated:** 2025-11-13
 
 ## Entry Template
 
