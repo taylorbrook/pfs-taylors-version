@@ -15,7 +15,7 @@ The synthesis engine faithfully recreates the analog circuits of each drum voice
 
 ## Parameters
 
-### Kick (6 parameters)
+### Kick (4 parameters)
 
 | Parameter | Range | Default | Description |
 |-----------|-------|---------|-------------|
@@ -81,7 +81,7 @@ The synthesis engine faithfully recreates the analog circuits of each drum voice
 
 **DSP:** Same six-oscillator architecture as closed hat, longer decay envelope.
 
-**Total Parameters:** 26
+**Total Parameters:** 24
 
 ## MIDI Implementation
 
