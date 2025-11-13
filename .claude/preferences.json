@@ -1,0 +1,8 @@
+{
+  "workflow": {
+    "mode": "manual",
+    "auto_test": false,
+    "auto_install": false,
+    "auto_package": false
+  }
+}

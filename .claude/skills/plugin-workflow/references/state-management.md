@@ -227,7 +227,7 @@ fi
 echo "- **Stage ${NEW_STAGE}:** ${COMPLETED}" >> "$HANDOFF_FILE"
 ```
 
-**.continue-here.md format with gui_type field:**
+**.continue-here.md format with gui_type and workflow_mode fields:**
 
 ```yaml
 ---
@@ -239,7 +239,11 @@ last_updated: 2025-11-13
 complexity_score: 2.5
 phased_implementation: false
 orchestration_mode: true
-gui_type: headless  # NEW: "headless" or "webview" (optional, defaults to "webview" if missing)
+gui_type: headless  # "headless" or "webview" (optional, defaults to "webview" if missing)
+workflow_mode: express  # NEW: "express" or "manual" (optional, defaults to "manual" if missing)
+auto_test: false  # NEW: Run pluginval after Stage 5 (optional, defaults to false)
+auto_install: true  # NEW: Install to system folders after tests (optional, defaults to false)
+auto_package: false  # NEW: Create PKG installer after install (optional, defaults to false)
 next_action: run_validation
 next_phase: null
 contract_checksums:
@@ -256,6 +260,20 @@ contract_checksums:
 - **Set by:** handleHeadlessPath() (Stage 3 → 4 transition) or handleGuiPath()
 - **Used by:** plugin-improve skill (detects headless plugins and offers "Create custom UI" option)
 - **Backward compatibility:** If field missing, defaults to "webview" (existing behavior)
+
+**workflow_mode field specification:**
+- **Values:** "express" | "manual"
+- **Purpose:** Track workflow automation level (auto-progress vs decision menus)
+- **Set by:** /implement or /continue command (reads from preferences.json or flags)
+- **Used by:** plugin-workflow skill (checkpoint protocol - skip menus in express mode)
+- **Backward compatibility:** If field missing, defaults to "manual" (existing behavior)
+
+**auto_test / auto_install / auto_package field specification:**
+- **Values:** true | false
+- **Purpose:** Control post-Stage-5 auto-actions (testing, installation, packaging)
+- **Set by:** /implement or /continue command (reads from preferences.json)
+- **Used by:** plugin-workflow skill (final menu - auto-invoke skills if enabled)
+- **Backward compatibility:** If fields missing, default to false (manual decision)
 
 **Called by:**
 - fallbackStateUpdate() when subagent verification fails

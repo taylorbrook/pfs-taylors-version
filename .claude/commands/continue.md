@@ -17,6 +17,57 @@ DO NOT manually read handoff files or present summaries. The context-resume skil
 
 ## Behavior
 
+**Command-line flags:**
+- `--express`: Force express mode for resumed workflow
+- `--manual`: Force manual mode for resumed workflow
+
+**Flag parsing:**
+```bash
+# Parse plugin name and flags from arguments
+# Input examples:
+#   "/continue PluginName"
+#   "/continue PluginName --express"
+#   "/continue PluginName --manual"
+
+PLUGIN_NAME=""
+FLAG_MODE=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --express)
+      FLAG_MODE="express"
+      ;;
+    --manual)
+      FLAG_MODE="manual"
+      ;;
+    /continue)
+      # Skip command itself
+      ;;
+    *)
+      PLUGIN_NAME="$arg"
+      ;;
+  esac
+done
+```
+
+**Mode determination on resume:**
+1. Check for flag override (--express or --manual)
+2. If flag present: Use flag mode (override saved mode)
+3. If no flag: Read workflow_mode from .continue-here.md
+4. If field missing: Default to "manual"
+
+**Pass mode to continuation skill:**
+```bash
+# Set environment variables before invoking context-resume
+if [ -n "$FLAG_MODE" ]; then
+  export WORKFLOW_MODE="$FLAG_MODE"
+  echo "Workflow mode: $FLAG_MODE (from flag, overriding saved mode)"
+else
+  # Read mode from .continue-here.md (handled by context-resume skill)
+  echo "Workflow mode: (resuming with saved mode)"
+fi
+```
+
 <preconditions enforcement="blocking">
   <check target="handoff_files" condition="at_least_one_exists">
     Search for `.continue-here.md` files in priority order:

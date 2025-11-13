@@ -105,7 +105,12 @@ At every significant completion point (stage complete, phase complete, files gen
 1. Auto-commit changes (if in workflow)
 2. Update state files (.continue-here.md, PLUGINS.md)
 3. **Verify checkpoint completion** (all steps succeeded)
-4. ALWAYS present numbered decision menu:
+4. **Check workflow mode** (express or manual)
+5. Present decision menu or auto-progress based on mode
+
+### Manual Mode (Default)
+
+Present numbered decision menu and WAIT for user response:
 
 ✓ [Completion statement]
 
@@ -119,10 +124,55 @@ What's next?
 
 Choose (1-5): \_
 
-4. WAIT for user response - NEVER auto-proceed
-5. Execute chosen action
+### Express Mode
 
-This applies to:
+Auto-progress to next stage without menu:
+
+✓ [Current milestone] → [Next milestone]...
+
+[Stage execution begins immediately]
+
+**Final menu always appears** (even in express mode) after Stage 5.
+
+### Workflow Mode Configuration
+
+**File:** `.claude/preferences.json`
+
+```json
+{
+  "workflow": {
+    "mode": "express",
+    "auto_test": false,
+    "auto_install": true,
+    "auto_package": false
+  }
+}
+```
+
+**Mode options:**
+- **"manual"** (default): Present decision menus at all checkpoints (Stages 0, 2, 3, 4, 5)
+- **"express"**: Auto-progress through stages without menus (time savings: 3-5 minutes per plugin)
+
+**Command-line overrides:**
+- `/implement PluginName --express`: Force express mode for this run
+- `/implement PluginName --manual`: Force manual mode for this run
+- `/continue PluginName --express`: Resume in express mode
+- `/continue PluginName --manual`: Resume in manual mode
+
+**Precedence:** Command flag > preferences.json > default ("manual")
+
+**Mode persistence:** Mode stored in `.continue-here.md` for resume scenarios
+
+**Safety:** Express mode drops to manual on ANY error (build failures, test failures, etc.)
+
+**Auto-actions:**
+- `auto_test`: Run pluginval automatically after Stage 5
+- `auto_install`: Install to system folders after tests pass
+- `auto_package`: Create PKG installer after installation
+
+See `.claude/preferences-README.md` for complete documentation.
+
+### Checkpoint Applies To
 
 - All workflow stages (0-6)
 - All subagent completions

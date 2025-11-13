@@ -97,10 +97,107 @@ When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to b
 3. Wait for user selection
 
 **If plugin name provided:**
-1. Parse plugin name from arguments
-2. Verify preconditions (status check, contract verification)
-3. If preconditions pass: Invoke plugin-workflow skill via Skill tool
-4. If preconditions fail: Display blocking error and stop
+1. Parse plugin name and flags from arguments
+2. Read preferences.json (if exists) and determine workflow mode
+3. Apply flag precedence (flag > preferences > default)
+4. Verify preconditions (status check, contract verification)
+5. If preconditions pass: Invoke plugin-workflow skill via Skill tool with mode context
+6. If preconditions fail: Display blocking error and stop
+
+## Workflow Mode & Preferences
+
+**Command-line flags:**
+- `--express`: Force express mode (auto-progress through stages)
+- `--manual`: Force manual mode (show decision menus)
+
+**Precedence order:**
+1. Command-line flag (--express or --manual)
+2. `.claude/preferences.json` (workflow.mode)
+3. Default ("manual")
+
+**Flag parsing:**
+```bash
+# Parse plugin name and flags from arguments
+# Input examples:
+#   "/implement PluginName"
+#   "/implement PluginName --express"
+#   "/implement PluginName --manual"
+
+PLUGIN_NAME=""
+FLAG_MODE=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --express)
+      FLAG_MODE="express"
+      ;;
+    --manual)
+      FLAG_MODE="manual"
+      ;;
+    /implement)
+      # Skip command itself
+      ;;
+    *)
+      PLUGIN_NAME="$arg"
+      ;;
+  esac
+done
+```
+
+**Preferences reading:**
+```bash
+# Read preferences.json (if exists)
+PREFS_MODE="manual"  # default
+AUTO_TEST="false"
+AUTO_INSTALL="false"
+AUTO_PACKAGE="false"
+
+if [ -f ".claude/preferences.json" ]; then
+  # Validate JSON before parsing
+  if jq empty .claude/preferences.json 2>/dev/null; then
+    PREFS_MODE=$(jq -r '.workflow.mode // "manual"' .claude/preferences.json)
+    AUTO_TEST=$(jq -r '.workflow.auto_test // false' .claude/preferences.json)
+    AUTO_INSTALL=$(jq -r '.workflow.auto_install // false' .claude/preferences.json)
+    AUTO_PACKAGE=$(jq -r '.workflow.auto_package // false' .claude/preferences.json)
+
+    # Validate mode value
+    if [[ "$PREFS_MODE" != "express" && "$PREFS_MODE" != "manual" ]]; then
+      echo "Warning: workflow.mode must be 'express' or 'manual', using manual mode"
+      PREFS_MODE="manual"
+    fi
+  else
+    echo "Warning: preferences.json is invalid JSON, using manual mode"
+    PREFS_MODE="manual"
+  fi
+fi
+
+# Determine effective mode (flag > preferences > default)
+EFFECTIVE_MODE="${FLAG_MODE:-$PREFS_MODE}"
+
+# Display mode selection
+if [ -n "$FLAG_MODE" ]; then
+  echo "Workflow mode: $EFFECTIVE_MODE (from flag)"
+else
+  echo "Workflow mode: $EFFECTIVE_MODE (from preferences)"
+fi
+```
+
+**Pass mode to plugin-workflow:**
+
+Before invoking the plugin-workflow skill, set environment variables for mode propagation:
+
+```bash
+export WORKFLOW_MODE="$EFFECTIVE_MODE"
+export AUTO_TEST="$AUTO_TEST"
+export AUTO_INSTALL="$AUTO_INSTALL"
+export AUTO_PACKAGE="$AUTO_PACKAGE"
+```
+
+The plugin-workflow skill reads these variables to control checkpoint behavior:
+- Express mode: Auto-progress through stages (no intermediate menus)
+- Manual mode: Present decision menus at each checkpoint (current behavior)
+
+See `.claude/skills/plugin-workflow/SKILL.md` for checkpoint protocol details.
 
 **Status parsing (ROBUST implementation):**
 ```
