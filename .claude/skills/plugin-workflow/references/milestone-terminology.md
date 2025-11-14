@@ -11,7 +11,7 @@
 **Problem:** Technical stage numbers create cognitive overhead:
 - "Stage 2 complete" → User must mentally map to "What did Stage 2 do?"
 - "Continue to Stage 3" → User must remember "What happens in Stage 3?"
-- "🚧 Stage 4" → User sees progress number, not achievement context
+- "🚧 Stage 2" → User sees progress number, not achievement context
 
 **Solution:** Milestone language conveys WHAT was achieved and WHY it matters:
 - "Audio Engine Working" → User knows audio processing is functional
@@ -30,7 +30,7 @@
 |----------------|----------------------|---------------|--------------|
 | Stage 1 | Build System Ready | Plugin compiles with all parameters implemented | 🔨 Building System |
 | Stage 2 | Audio Engine Working | DSP processing functional | 🎵 Processing Audio |
-| Stage 3 | Plugin Complete | Interface connected, validated, ready to install | ✅ Working |
+| Stage 3 | Plugin Complete | Interface connected, automatic validation runs, ready to install | ✅ Working |
 
 ### Planning Milestones (Managed by plugin-planning skill)
 
@@ -120,25 +120,14 @@ Status: Ready for UI integration
 
 **Stage 3 Complete:**
 ```
-✓ UI Integrated
-   Your interface is connected and responding to parameter changes
+✓ Plugin Complete
+   Your interface is connected, all validation passed - plugin is ready to use
 
 Plugin: TapeDelay
 UI: WebView integrated from v2 mockup
 Bindings: 6 parameters bound to UI
-Tests: All passed (including UI sync)
-Status: Ready for final validation
-```
-
-**Stage 4 Complete:**
-```
-✓ Plugin Complete
-   All validation passed - your plugin is ready to use
-
-Plugin: TapeDelay
-Validation: pluginval passed (0 errors)
+Validation: Automatic validation passed (0 errors)
 Presets: 5 factory presets created
-CHANGELOG: Generated
 Status: Ready to install
 ```
 
@@ -221,12 +210,11 @@ Next milestone: [Required milestone]
 🔨 Building System      → Compiling plugin structure
 🎵 Processing Audio     → Implementing DSP
 🎨 Designing Interface  → Connecting UI
-✅ Validating           → Final polish
-✅ Ready to Install     → Validation passed
+✅ Working              → Validation passed, ready to install
 📦 Installed            → Deployed to system
 ```
 
-**Implementation note:** Internal code still uses stage numbers (1-4) for routing logic, but NEVER displays them to users.
+**Implementation note:** Internal code still uses stage numbers (1-3) for routing logic, but NEVER displays them to users.
 
 ---
 
@@ -318,7 +306,7 @@ What would you like to do?
 ## Internal Stage Tracking
 
 **CRITICAL:** Internal code STILL uses stage numbers for:
-- Routing logic (Stage 1 → foundation-shell-agent, Stage 2 → dsp-agent, etc.)
+- Routing logic (Stage 1 → foundation-shell-agent, Stage 2 → dsp-agent, Stage 3 → gui-agent)
 - .continue-here.md state tracking (stage: 3)
 - Precondition checks (checkStagePreconditions(3))
 - Git commit metadata (feat: [Plugin] Stage 2 - audio engine working)
@@ -336,7 +324,7 @@ What would you like to do?
 
 **Existing state files (.continue-here.md):**
 ```yaml
-stage: 3
+stage: 2
 milestone: "Audio Engine Working"  # NEW: Added for user-facing display
 next_action: "Continue DSP implementation"
 ```

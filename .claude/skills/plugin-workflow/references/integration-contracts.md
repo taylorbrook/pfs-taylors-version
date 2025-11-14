@@ -74,11 +74,11 @@ Return JSON report when complete.
 
 ## dsp-agent Contract
 
-**When:** Stage 3 (DSP) implementation
+**When:** Stage 2 (DSP) implementation
 
 **Sends via Task tool:**
 ```
-Implement Stage 3 [Phase X] for [PluginName].
+Implement Stage 2 [Phase X] for [PluginName].
 
 **Contracts:**
 - architecture.md: [full content]
@@ -105,11 +105,11 @@ Return JSON report when complete.
 
 ## gui-agent Contract
 
-**When:** Stage 4 (GUI) implementation
+**When:** Stage 3 (GUI) implementation
 
 **Sends via Task tool:**
 ```
-Implement Stage 4 (GUI) for [PluginName].
+Implement Stage 3 (GUI) for [PluginName].
 
 **Contracts:**
 - parameter-spec.md: [full content]
@@ -135,7 +135,7 @@ Return JSON report when complete.
 
 ## validator Contract
 
-**When:** After each stage completion (optional but recommended)
+**When:** Automatic validation after each stage completion
 
 **Sends via Task tool:**
 ```
@@ -159,7 +159,7 @@ Return JSON validation report.
 - Override file exists → validator handles suppression
 - Schema validation failure → log warning, continue anyway (validation is advisory)
 
-**Contract:** Validator is advisory, not blocking. Orchestrator presents validation results in checkpoint menu. User makes final decision.
+**Contract:** Validator runs automatically after each stage. Orchestrator presents validation results in checkpoint menu. User makes final decision.
 
 ---
 
@@ -200,7 +200,7 @@ Return JSON validation report.
 
 **Receives:**
 - Plugin name (string)
-- Stage number (integer 0-6)
+- Stage number (integer 0-3)
 - Phase (string or null)
 - Orchestration mode (boolean, must be true)
 - Handoff context (full .continue-here.md content)
@@ -222,8 +222,9 @@ Return JSON validation report.
 - Entry stage (typically Stage 1, or wherever workflow paused)
 
 **Returns:**
-- Executes workflow from entry stage through Stage 4
+- Executes workflow from entry stage through Stage 3
 - Presents checkpoint menus at each stage
+- Automatic validation after each stage
 - Updates PLUGINS.md to ✅ Working when complete
 
 **Contract:** Command expands to prompt that invokes this skill. Skill handles full workflow.

@@ -32,6 +32,7 @@
 - Parameter declarations (EXACT parameters from parameter-spec.md)
 - Empty processBlock()
 - Build system verification
+- Automatic validation after completion
 
 ### Stage 2: DSP Implementation
 
@@ -54,6 +55,8 @@
 - Parameters: [Which parameters implemented]
 - Success criteria: [What makes this phase complete]
 
+**Validation:** Automatic validation runs after stage completion
+
 ### Stage 3: GUI Implementation
 
 **Implementation Strategy:** [Single-pass | Multi-phase]
@@ -69,11 +72,12 @@
 **Phase 3.3: Polish** (if needed)
 - Focus: Refinements and edge cases
 
-### Stage 4: Validation
+**Validation:** Automatic validation runs after stage completion
 **Deliverables:**
-- Pluginval compliance check
+- Integrated WebView UI with parameter bindings
 - Factory presets
 - Documentation finalization
+- Pluginval compliance check (automatic)
 - Manual testing checklist
 
 ## Risk Factors
@@ -85,5 +89,6 @@
 
 - This plan is generated after contracts (parameter-spec.md, architecture.md) are locked
 - Complexity ≥3 plugins use multi-phase approach for Stage 2 and/or Stage 3
+- Automatic validation runs after each stage completion
 - Each phase creates a git commit
 - Workflow can be paused at any stage boundary

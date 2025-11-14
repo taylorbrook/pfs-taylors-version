@@ -1,6 +1,6 @@
 # Phase-Aware Dispatch
 
-Complex plugins (complexity ≥3) require phased implementation for Stages 4-5. This document describes the phase detection, execution loop, and prompt construction algorithms.
+Complex plugins (complexity ≥3) require phased implementation for Stages 2-3. This document describes the phase detection, execution loop, and prompt construction algorithms.
 
 ## Contents
 
@@ -14,14 +14,14 @@ Complex plugins (complexity ≥3) require phased implementation for Stages 4-5. 
 ## When to Use Phase-Aware Dispatch
 
 Phase-aware dispatch is triggered when:
-1. **Stage** is 4 (DSP) or 5 (GUI)
+1. **Stage** is 2 (DSP) or 3 (GUI)
 2. **Complexity score** (from plan.md YAML frontmatter) ≥3
-3. **plan.md contains phase markers**: `### Phase 4.X` or `### Phase 5.X`
+3. **plan.md contains phase markers**: `### Phase 2.X` or `### Phase 3.X`
 
 If all three conditions true: Loop through phases one at a time.
 Otherwise: Invoke agent once for entire stage.
 
-**Applies to:** Stages 4 and 5 only. Stages 2, 3, and 6 remain single-pass.
+**Applies to:** Stages 2 and 3 only. Stage 1 remains single-pass.
 
 ## Phase Detection Algorithm
 
@@ -36,9 +36,9 @@ const complexityMatch = planContent.match(/\*\*Complexity Score:\*\*\s+([\d.]+)/
 const complexityScore = complexityMatch ? parseFloat(complexityMatch[1]) : 0;
 
 // 3. Check for phase markers based on current stage
-const stagePhasePattern = currentStage === 4
-  ? /### Phase 4\.\d+/g
-  : /### Phase 5\.\d+/g;
+const stagePhasePattern = currentStage === 2
+  ? /### Phase 2\.\d+/g
+  : /### Phase 3\.\d+/g;
 
 const hasPhases = stagePhasePattern.test(planContent);
 
@@ -59,8 +59,8 @@ console.log(`Execution mode: ${needsPhasedImplementation ? "PHASED" : "SINGLE-PA
 
 1. Invoke subagent ONCE for entire stage
 2. Use prompt template from reference file single-pass section:
-   - Stage 3: `references/stage-4-dsp.md` lines 45-87 (single-pass implementation)
-   - Stage 4: `references/stage-5-gui.md` lines 83-135 (single-pass implementation)
+   - Stage 2: `references/stage-2-dsp.md` lines 45-87 (single-pass implementation)
+   - Stage 3: `references/stage-3-gui.md` lines 83-135 (single-pass implementation)
 3. Checkpoint after stage completes (standard 6-step checkpoint)
 4. Present decision menu (continue to next stage, pause, test, etc.)
 
@@ -71,15 +71,15 @@ console.log(`Execution mode: ${needsPhasedImplementation ? "PHASED" : "SINGLE-PA
 **Phase parsing:**
 ```typescript
 // Extract all phases for current stage from plan.md
-const phasePattern = currentStage === 4
-  ? /### Phase (4\.\d+):\s*(.+?)$/gm
-  : /### Phase (5\.\d+):\s*(.+?)$/gm;
+const phasePattern = currentStage === 2
+  ? /### Phase (2\.\d+):\s*(.+?)$/gm
+  : /### Phase (3\.\d+):\s*(.+?)$/gm;
 
 const phases = [];
 let match;
 while ((match = phasePattern.exec(planContent)) !== null) {
   phases.push({
-    number: match[1],        // e.g., "4.1" or "5.1"
+    number: match[1],        // e.g., "2.1" or "3.1"
     description: match[2]    // e.g., "Voice Architecture" or "Layout and Basic Controls"
   });
 }
@@ -99,7 +99,7 @@ for (let i = 0; i < phases.length; i++) {
 
   // Invoke subagent for THIS PHASE ONLY
   const phaseResult = Task({
-    subagent_type: currentStage === 4 ? "dsp-agent" : "gui-agent",
+    subagent_type: currentStage === 2 ? "dsp-agent" : "gui-agent",
     description: `Implement Phase ${phase.number} for ${pluginName}`,
     prompt: constructPhasePrompt(phase, pluginName, currentStage, phases.length)
   });
@@ -194,11 +194,11 @@ function constructPhasePrompt(phase, pluginName, currentStage, totalPhases) {
   const planMd = readFile(`plugins/${pluginName}/.ideas/plan.md`);
 
   // Stage-specific additional contracts
-  const creativeBriefMd = currentStage === 5
+  const creativeBriefMd = currentStage === 3
     ? readFile(`plugins/${pluginName}/.ideas/creative-brief.md`)
     : null;
 
-  const mockupPath = currentStage === 5
+  const mockupPath = currentStage === 3
     ? findLatestMockup(pluginName)
     : null;
 
@@ -224,7 +224,7 @@ ${parameterSpecMd}
 - plan.md (Phase ${phase.number} section):
 ${planMd}
 
-${currentStage === 5 ? `
+${currentStage === 3 ? `
 - creative-brief.md:
 ${creativeBriefMd}
 
@@ -234,7 +234,7 @@ ${creativeBriefMd}
 **Tasks for Phase ${phase.number}:**
 1. Read plan.md and extract Phase ${phase.number} components ONLY
 2. Read architecture.md for component specifications
-${currentStage === 4 ? `3. Add member variables for Phase ${phase.number} DSP components
+${currentStage === 2 ? `3. Add member variables for Phase ${phase.number} DSP components
 4. Implement Phase ${phase.number} components in processBlock()
 5. Build on existing code from previous phases (do NOT remove previous work)
 6. Connect Phase ${phase.number} parameters only
@@ -268,7 +268,7 @@ Build verification handled by workflow after agent completes.
 
 ❌ **NEVER send** "Implement ALL phases" to subagent
 - Causes compilation errors from attempting too much
-- Led to DrumRoulette Stage 4 failure (3 phases → single invocation → build errors)
+- Led to DrumRoulette Stage 3 failure (3 phases → single invocation → build errors)
 - Violates incremental implementation principle
 
 ✓ **ALWAYS invoke** subagent once per phase with phase-specific prompt
@@ -279,18 +279,16 @@ Build verification handled by workflow after agent completes.
 
 ### Enforcement Rules
 
-**Phase-aware dispatch is MANDATORY for Stages 4-5 when:**
+**Phase-aware dispatch is MANDATORY for Stages 2-3 when:**
 1. Complexity score ≥3 (from plan.md)
-2. Phase markers exist in plan.md (### Phase 4.X or ### Phase 5.X)
+2. Phase markers exist in plan.md (### Phase 2.X or ### Phase 3.X)
 
-**Phase-aware dispatch is SKIPPED for Stages 4-5 when:**
+**Phase-aware dispatch is SKIPPED for Stages 2-3 when:**
 1. Complexity score <3 (simple plugin, single-pass sufficient)
 2. No phase markers in plan.md (plan didn't define phases)
 
 **Phase-aware dispatch DOES NOT APPLY to:**
 - Stage 1 (Foundation) - always single-pass
-- Stage 2 (Shell) - always single-pass
-- Stage 4 (Validation) - always single-pass
 
 **The orchestrator MUST:**
 - Read plan.md to detect phases BEFORE invoking subagent
@@ -303,7 +301,7 @@ Build verification handled by workflow after agent completes.
 - Skip phase detection (this is mandatory control flow)
 - Invoke subagent with multiple phases at once
 - Auto-proceed between phases without user confirmation
-- Reference stage-4-dsp.md or stage-5-gui.md reference files for control flow (those are documentation/templates only)
+- Reference stage-2-dsp.md or stage-3-gui.md reference files for control flow (those are documentation/templates only)
 
 ## Integration with Checkpoint Protocol
 

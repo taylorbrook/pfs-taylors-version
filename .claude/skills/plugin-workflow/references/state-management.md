@@ -161,7 +161,7 @@ These functions are retained for fallback use when subagent doesn't update state
 
 **Parameters:**
 - `pluginName`: Plugin identifier
-- `stage`: Current stage number (0-5)
+- `stage`: Current stage number (0-3)
 - `completed`: Description of what was completed
 - `nextSteps`: Array of next action items
 - `complexityScore`: Numeric complexity (used for routing)
@@ -232,7 +232,7 @@ echo "- **Stage ${NEW_STAGE}:** ${COMPLETED}" >> "$HANDOFF_FILE"
 ```yaml
 ---
 plugin: PluginName
-stage: 4
+stage: 3
 phase: null
 status: complete
 last_updated: 2025-11-13
@@ -241,9 +241,6 @@ phased_implementation: false
 orchestration_mode: true
 gui_type: headless  # "headless" or "webview" (optional, defaults to "webview" if missing)
 workflow_mode: express  # NEW: "express" or "manual" (optional, defaults to "manual" if missing)
-auto_test: false  # NEW: Run pluginval after Stage 4 (optional, defaults to false)
-auto_install: true  # NEW: Install to system folders after tests (optional, defaults to false)
-auto_package: false  # NEW: Create PKG installer after install (optional, defaults to false)
 next_action: run_validation
 next_phase: null
 contract_checksums:
@@ -268,16 +265,9 @@ contract_checksums:
 - **Used by:** plugin-workflow skill (checkpoint protocol - skip menus in express mode)
 - **Backward compatibility:** If field missing, defaults to "manual" (existing behavior)
 
-**auto_test / auto_install / auto_package field specification:**
-- **Values:** true | false
-- **Purpose:** Control post-Stage-5 auto-actions (testing, installation, packaging)
-- **Set by:** /implement or /continue command (reads from preferences.json)
-- **Used by:** plugin-workflow skill (final menu - auto-invoke skills if enabled)
-- **Backward compatibility:** If fields missing, default to false (manual decision)
-
 **Called by:**
 - fallbackStateUpdate() when subagent verification fails
-- Stage 4 (orchestrator direct execution, no subagent)
+- Validation (orchestrator direct execution, no subagent)
 
 ### updatePluginStatus(pluginName, newStatus)
 
@@ -312,7 +302,7 @@ return 0
 
 **Called by:**
 - fallbackStateUpdate() when subagent verification fails
-- Stage 4 (orchestrator direct execution)
+- Validation (orchestrator direct execution)
 
 ### updatePluginTimeline(pluginName, stage, description)
 
@@ -351,7 +341,7 @@ return 0
 
 **Called by:**
 - fallbackStateUpdate() when subagent verification fails
-- Stage 4 (orchestrator direct execution)
+- Validation (orchestrator direct execution)
 
 ### createNotesFile(pluginName, status)
 
@@ -656,7 +646,7 @@ Stage 0: 15k → 1k tokens (verification only)
 Stage 1: 12k → 1k tokens (verification only)
 Stage 2: 15k → 1.5k tokens (verification + phase handling)
 Stage 3: 12k → 1.2k tokens (verification + phase handling)
-Stage 4: 3.5k → 0.3k tokens (verification only)
+Validation: 3.5k → 0.3k tokens (verification only)
 ```
 
 ---
@@ -669,8 +659,8 @@ Stage 4: 3.5k → 0.3k tokens (verification only)
   "agent": "dsp-agent",
   "status": "success",
   "outputs": {
-    "stage_completed": 3,
-    "phase_completed": "3.2",
+    "stage_completed": 2,
+    "phase_completed": "2.2",
     "files_modified": ["PluginProcessor.cpp"],
     "state_files_updated": [
       "plugins/PluginName/.continue-here.md",
