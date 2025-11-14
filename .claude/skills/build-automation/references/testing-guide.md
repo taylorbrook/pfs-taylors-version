@@ -44,7 +44,7 @@ Test within workflow:
 2. Let workflow reach Stage 1 completion
 3. Observe build-automation invocation
 4. Test success menu choices
-5. Continue workflow through Stage 4
+5. Continue workflow through Stage 3
 
 Verify:
 - Correct flags used per stage (--no-install for Stage 1, none for others)

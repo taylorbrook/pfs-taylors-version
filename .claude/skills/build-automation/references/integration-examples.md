@@ -27,13 +27,13 @@ Foundation verified. What's next?
 6. Exit skill, return to plugin-workflow
 7. plugin-workflow invokes foundation-shell-agent
 
-## Scenario 2: From Stages 3-6
+## Scenario 2: From Stages 2-3
 
-**Context:** plugin-workflow invoked build-automation after foundation-shell-agent/dsp-agent/gui-agent completed
+**Context:** plugin-workflow invoked build-automation after dsp-agent/gui-agent completed
 
 **Invocation:**
 ```
-Invoking build-automation for LushVerb (Stage 3: DSP)
+Invoking build-automation for LushVerb (Stage 2: DSP)
 Flags: none (full build + install)
 ```
 
@@ -45,7 +45,7 @@ Flags: none (full build + install)
 
 ```
 DSP implementation complete. What's next?
-1. Continue to Stage 4 (GUI) (recommended)
+1. Continue with automatic validation (recommended)
 2. Test in DAW now
 3. Review DSP code
 4. Pause workflow

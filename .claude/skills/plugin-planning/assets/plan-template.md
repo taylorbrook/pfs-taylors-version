@@ -26,8 +26,8 @@
 - Stage 1: Foundation ← Next
 - Stage 2: Shell
 - Stage 3: DSP [phased if complex]
-- Stage 4: GUI [phased if complex]
-- Stage 4: Validation
+- Stage 3: GUI [phased if complex]
+- Stage 3: Validation
 
 ---
 
@@ -40,8 +40,8 @@
 - Stage 1: Foundation - project structure
 - Stage 2: Shell - APVTS parameters
 - Stage 3: DSP - single pass
-- Stage 4: GUI - single pass
-- Stage 4: Validation - presets, pluginval, changelog
+- Stage 3: GUI - single pass
+- Stage 3: Validation - presets, pluginval, changelog
 
 ### Implementation Notes
 
@@ -114,7 +114,7 @@
 
 ---
 
-### Stage 4: GUI Phases
+### Stage 3: GUI Phases
 
 #### Phase 5.1: Layout and Basic Controls
 
@@ -180,11 +180,11 @@
   - Phase 4.1
   - Phase 4.2
   - Phase 4.3 (if applicable)
-- Stage 4: GUI - [N] phases
+- Stage 3: GUI - [N] phases
   - Phase 5.1
   - Phase 5.2
   - Phase 5.3 (if applicable)
-- Stage 4: Validation - presets, pluginval, changelog
+- Stage 3: Validation - presets, pluginval, changelog
 
 ---
 

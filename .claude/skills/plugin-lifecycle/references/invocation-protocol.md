@@ -9,7 +9,7 @@ When invoked, determine the mode by examining the trigger:
 ### Mode 1: Installation
 **Triggers:**
 - Command: `/install-plugin [PluginName]`
-- From plugin-workflow: After Stage 4 validation completes
+- From plugin-workflow: After Stage 3 validation completes
 - From plugin-improve: User accepts reinstallation offer
 - Natural language: "Install [PluginName]", "Deploy [PluginName]"
 
@@ -56,8 +56,8 @@ User: /install-plugin TapeAge
 
 ### Example 2: From plugin-workflow
 ```
-plugin-workflow completes Stage 4 → invokes plugin-lifecycle with:
-- Context: "Stage 4 complete for [PluginName]"
+plugin-workflow completes Stage 3 → invokes plugin-lifecycle with:
+- Context: "Stage 3 complete for [PluginName]"
 - Mode: 1 (Installation)
 - Plugin name: From context
 - Action: Execute installation workflow automatically
@@ -116,7 +116,7 @@ After completing any operation (install/uninstall/reset/destroy):
 - `/reset-to-ideation` command (Mode 3)
 - `/destroy` command (Mode 4)
 - `/clean` command (Mode: Menu)
-- `plugin-workflow` skill (Mode 1 after Stage 4)
+- `plugin-workflow` skill (Mode 1 after Stage 3)
 - `plugin-improve` skill (Mode 1 after changes, if user confirms)
 - Natural language requests
 

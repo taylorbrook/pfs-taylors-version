@@ -73,7 +73,7 @@ What would you like to do?
 
 1. Investigate results (view detailed logs)
 2. Run Mode 2 (pluginval) for comprehensive validation ⭐ RECOMMENDED
-3. Continue to next stage (Stage 4: Installation)
+3. Continue to installation
 4. Return to main workflow
 
 Choose (1-4): _
@@ -104,7 +104,7 @@ AU: {AU_RESULT}
 
 What's next?
 
-1. Continue to Stage 4 (Installation) ⭐ RECOMMENDED
+1. Continue to installation ⭐ RECOMMENDED
 2. Run Mode 1 (Automated Tests) for additional coverage
 3. Run Mode 3 (Manual DAW Testing)
 4. View detailed pluginval logs
@@ -142,7 +142,7 @@ Results: {USER_REPORTED_RESULTS}
 
 What's next?
 
-1. Continue to Stage 4 (Installation) ⭐ RECOMMENDED
+1. Continue to installation ⭐ RECOMMENDED
 2. Run Mode 2 (pluginval) for validation
 3. Document issues found
 4. Return to main workflow

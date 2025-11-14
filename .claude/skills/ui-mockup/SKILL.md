@@ -387,7 +387,7 @@ Each iteration runs in fresh agent context. User chooses "Iterate" → Orchestra
 
 **File naming:** All 7 files prefixed with version (e.g., `v2-ui.html`, `v2-PluginEditor.h`).
 
-**Implementation:** Latest version used for Stage 4 unless user specifies different version.
+**Implementation:** Latest version used for Stage 3 (GUI) unless user specifies different version.
 
 See `references/versioning.md` for file management details.
 
@@ -416,7 +416,7 @@ See `references/versioning.md` for file management details.
 ## Integration Points
 
 **Invoked by:**
-- `/dream` command → After creative brief, before parameter finalization
+- `/dream` command → After creative brief, before implementation
 - `plugin-workflow` skill → During Stage 0 (UI design phase)
 - `plugin-improve` skill → When redesigning existing plugin UI
 - Natural language: "Design UI for [PluginName]", "Create mockup for compressor"
@@ -437,8 +437,8 @@ See `references/versioning.md` for file management details.
 - `.continue-here.md` → Update workflow state (if workflow)
 
 **Blocks:**
-- Stage 1 (Planning) → Cannot proceed without parameter-spec.md
-- Stage 4 (GUI) → Cannot implement without approved UI mockup
+- Stage 1 (Foundation) → Cannot proceed without parameter-spec.md
+- Stage 3 (GUI) → Cannot implement without approved UI mockup
 
 ---
 

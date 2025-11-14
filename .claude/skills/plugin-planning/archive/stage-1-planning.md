@@ -193,7 +193,7 @@ Total: [X.X] / 5.0
 
 **Complex plugins (score ≥ 3.0):**
 - Break Stage 3 (DSP) into phases
-- Break Stage 4 (GUI) into phases
+- Break Stage 3 (GUI) into phases
 - Each phase gets git commit
 - Clear test criteria per phase
 
@@ -229,7 +229,7 @@ Identify advanced components:
 - Multiband processing
 - MIDI control
 
-#### Stage 4: GUI Phases
+#### Stage 3: GUI Phases
 
 **Phase 5.1: Layout and Basic Controls**
 
@@ -294,8 +294,8 @@ Components:
 - Stage 1: Foundation ← Next
 - Stage 2: Shell
 - Stage 3: DSP
-- Stage 4: GUI
-- Stage 4: Validation
+- Stage 3: GUI
+- Stage 3: Validation
 
 ## Estimated Duration
 
@@ -304,8 +304,8 @@ Total: ~[X] minutes
 - Stage 1: 5 min (Foundation - project structure)
 - Stage 2: 5 min (Shell - APVTS parameters)
 - Stage 3: [X] min (DSP - single pass)
-- Stage 4: [X] min (GUI - single pass)
-- Stage 4: 15 min (Validation - presets, pluginval, changelog)
+- Stage 3: [X] min (GUI - single pass)
+- Stage 3: 15 min (Validation - presets, pluginval, changelog)
 
 ## Implementation Notes
 
@@ -317,7 +317,7 @@ Total: ~[X] minutes
 Use template with full phase breakdown:
 - Complexity calculation shown
 - Stage 3 phases with test criteria
-- Stage 4 phases with test criteria
+- Stage 3 phases with test criteria
 - Duration estimates per phase
 
 **Example phase entry:**

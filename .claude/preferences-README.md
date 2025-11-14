@@ -16,7 +16,7 @@ Controls workflow automation level:
   - Time cost: ~2-3 minutes per plugin (4 decision points)
   - Use when: Learning the system, troubleshooting, or want control over each stage
 
-- **"express"**: Automatically progress through all stages without decision menus. Final menu still appears after Stage 3.
+- **"express"**: Automatically progress through all stages without decision menus. Final menu still appears after Stage 3 validation completes.
   - Time savings: 2-3 minutes per plugin (0 intermediate decisions)
   - Use when: Building straightforward plugins, comfortable with the workflow, want speed
 
@@ -37,7 +37,7 @@ Controls workflow automation level:
 This setting is preserved for backward compatibility but no longer affects workflow behavior. Validation now runs automatically at the end of Stage 3 as part of unified validation.
 
 **Previous behavior (old 5-stage system):**
-- Controlled whether pluginval ran automatically after Stage 4
+- Controlled whether pluginval ran automatically after separate validation stage
 - **New behavior:** Validation is automatic and integrated into Stage 3 completion
 
 **Example:**

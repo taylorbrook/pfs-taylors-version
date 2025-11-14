@@ -34,17 +34,17 @@ git log --oneline plugins/$PLUGIN_NAME/ -5
 
 ```
 Last commits:
-- abc1234 feat: TapeDelay Stage 3.2 - modulation system (2 hours ago)
-- def5678 feat: TapeDelay Stage 3.1 - core delay (4 hours ago)
+- abc1234 feat: TapeDelay Stage 2.2 - modulation system (2 hours ago)
+- def5678 feat: TapeDelay Stage 2.1 - core delay (4 hours ago)
 
-Best guess: Stage 3 was in progress but handoff file was deleted or lost.
+Best guess: Stage 2 was in progress but handoff file was deleted or lost.
 
 How would you like to proceed?
 
-1. Start from Stage 4 (GUI) - assume Stage 3 complete
-2. Review Stage 3 code to verify completion
-3. Restart Stage 3 from scratch (re-implement DSP)
-4. Check if Stage 4 (Validation) is more appropriate
+1. Start from Stage 3 (GUI) - assume Stage 2 complete
+2. Review Stage 2 code to verify completion
+3. Restart Stage 2 from scratch (re-implement DSP)
+4. Check if Stage 3 validation is more appropriate
 5. Other
 
 Choose (1-5): _
@@ -96,14 +96,14 @@ Look for stage markers in commit messages, infer likely stage.
 ```
 Reconstructed state from git commits:
 
-Inferred stage: Stage 3 (based on commit messages)
-Last commit: feat: TapeDelay Stage 3.2 - modulation system
+Inferred stage: Stage 2 (based on commit messages)
+Last commit: feat: TapeDelay Stage 2.2 - modulation system
 Commit date: 2 hours ago
 
 Warning: This is a best guess. Handoff file was corrupted.
 
 Options:
-1. Proceed with Stage 4 (next stage after inferred position)
+1. Proceed with Stage 3 (next stage after inferred position)
 2. Review code to manually verify current state
 3. Recreate handoff file manually (I'll help)
 4. Other
@@ -190,7 +190,7 @@ Commits:
 
 Files changed:
 - PluginProcessor.cpp: +45 lines, -12 lines
-- PluginEditor.cpp: +23 lines, -5 lines
+- PluginEditor.h: +23 lines, -5 lines
 
 Continue from current state? (y/n): _
 ```
@@ -204,7 +204,7 @@ Display notes from handoff file markdown:
 
 - Remember to test wow/flutter at extreme values
 - Check if feedback parameter needs nonlinear scaling
-- UI mockup v3 might need iteration before Stage 4
+- UI mockup v3 might need iteration before implementing GUI
 ```
 
 Display these prominently in summary.

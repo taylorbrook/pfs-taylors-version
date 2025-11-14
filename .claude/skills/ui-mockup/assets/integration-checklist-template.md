@@ -283,7 +283,7 @@ UI integration is complete when:
 
 After successful integration:
 
-1. Continue to Stage 4 (Validation)
+1. Continue with automatic validation
 2. Run pluginval tests
 3. Manual DAW testing
 4. Install for production use

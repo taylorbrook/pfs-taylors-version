@@ -2,7 +2,7 @@
 
 **Purpose:** Non-negotiable constraints for WebView-based plugin UIs that prevent runtime failures and ensure professional behavior.
 
-**When to enforce:** Every mockup generation, validation before finalization, gui-agent Stage 4 implementation.
+**When to enforce:** Every mockup generation, validation before finalization, gui-agent Stage 3 implementation.
 
 ---
 
@@ -297,7 +297,7 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE ${PLUGIN_NAME}_UIResources)
 - Version stability (no CDN changes breaking plugin)
 
 **Development exception:**
-- Local dev server OK for hot reloading during development
+- Local dev server acceptable for hot reloading during development
 - Must switch to embedded files for production builds
 
 ---

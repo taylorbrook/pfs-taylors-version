@@ -348,7 +348,7 @@ Available plugins:
 
 **Workflow after reset:**
 ```
-💡 Ideated → /implement → Stage 0 → ... → Stage 4 → ✅ Working
+💡 Ideated → /implement → Stage 0 → ... → Stage 3 → ✅ Working
 ```
 
 ## Use Cases
@@ -386,14 +386,13 @@ You: "/implement GuitarPedal"
 ### Scenario 3: Complexity Underestimated
 
 ```
-You: "This is way more complex than Complexity 3. Need to restart with proper phasing."
+You: "This is way more complex than expected. Need to restart with proper planning."
 You: "/reset-to-ideation Reverb"
 
 [After reset, creative brief preserved]
 
 You: "/implement Reverb"
-Claude: [Stage 0 research]
-Claude: [Stage 1 planning - recalculates complexity as 6.5, creates phases]
+Claude: [Stage 0 research - recalculates complexity, creates phases if needed]
 [Proceeds with proper phased implementation]
 ```
 

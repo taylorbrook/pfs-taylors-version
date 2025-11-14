@@ -18,7 +18,7 @@ Search the 2 standard handoff locations in order:
 test -f "plugins/$PLUGIN_NAME/.continue-here.md"
 ```
 
-**Location meaning:** Plugin in active development, planning, or ideation (Stages 0-6, ideation, improvement planning)
+**Location meaning:** Plugin in active development, planning, or ideation (Stages 0-3, ideation, improvement planning)
 **Created by:** plugin-planning skill, plugin-workflow skill, plugin-ideation skill
 **Contains:** Stage number, phase (if complex), completed work, next steps, creative brief status, mockup status
 
@@ -58,8 +58,8 @@ Which plugin would you like to resume?
    Last: Core delay algorithm implemented, testing modulation next
 
 2. VintageComp
-   Stage 4 (Validation) • Testing • 1 day ago
-   Last: Pluginval passed, creating factory presets
+   Stage 3 validation complete • Testing • 1 day ago
+   Last: Pluginval passed, ready to install
 
 3. SpringReverb
    Mockup v2 ready • Ready to implement • 3 days ago
@@ -97,7 +97,7 @@ Present disambiguation:
 ```
 Multiple resume points found for TapeDelay:
 
-1. Main workflow: Stage 3 (DSP implementation)
+1. Main workflow: Stage 2 (DSP implementation)
    Location: plugins/TapeDelay/.continue-here.md
    Last updated: 2 hours ago
    Context: Implementing modulation matrix for wow/flutter
@@ -120,7 +120,7 @@ Choose (1-4): _
 
 - If main workflow is more recent → Recommend that
 - If mockup is more recent → Recommend mockup
-- If workflow is at Stage 4 (GUI) and mockup exists → Recommend mockup
+- If workflow is at Stage 3 (GUI) and mockup exists → Recommend mockup
 - Default to main workflow if uncertain
 
 ---

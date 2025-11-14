@@ -51,7 +51,7 @@ If `orchestration_mode: false` or not present, use legacy routing (below).
 
 Based on handoff content and user selection, route to appropriate skill:
 
-### Workflow resume (stage = 0-6)
+### Workflow resume (stage = 0-3)
 
 ```
 User chose: Continue Stage [N]
@@ -90,7 +90,7 @@ User chose option 1 (Finalize) or 2 (Iterate)
 
 If option 1 (Finalize):
   - Generate parameter-spec.md if not exists
-  - Offer to start Stage 4 (GUI) with plugin-workflow
+  - Offer to start Stage 3 (GUI) with plugin-workflow
   - Or offer to start Stage 0 (Research) for new implementation
 
 If option 2 (Iterate):

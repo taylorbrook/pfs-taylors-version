@@ -26,7 +26,7 @@ preconditions:
 
 **CRITICAL:** This skill MUST NOT implement workflow stages directly.
 
-When resuming workflow (Stages 0-6), this skill:
+When resuming workflow (Stages 0-3), this skill:
 1. Locates handoff file
 2. Parses context
 3. Presents summary to user
@@ -54,7 +54,7 @@ The system uses 2 handoff locations, checked in priority order:
 **Priority 1: Main Workflow Handoff**
 `plugins/[PluginName]/.continue-here.md`
 
-Plugin in active development (Stages 0-6, ideation, improvement planning). Contains stage, phase, orchestration_mode, next_action, completed work, next steps.
+Plugin in active development (Stages 0-3, ideation, improvement planning). Contains stage, phase, orchestration_mode, next_action, completed work, next steps.
 
 **Priority 2: Mockup Handoff**
 `plugins/[PluginName]/.ideas/mockups/.continue-here.md`
@@ -164,9 +164,9 @@ See **[references/error-recovery.md](references/error-recovery.md)** for all err
 
 **Backward Compatibility:**
 
-Handles legacy handoffs with Stage 4 or Stage 5 references:
-- Stage 4 (old validation stage) → Maps to "Stage 3 complete, plugin validated, ready to install"
-- Stage 5 (old preset/finalization stage) → Maps to "Stage 3 complete, plugin validated, ready to install"
+Handles legacy handoffs with old stage references:
+- Old validation stage → Maps to "Stage 3 complete, plugin validated, ready to install"
+- Old preset/finalization stage → Maps to "Stage 3 complete, plugin validated, ready to install"
 - Detects old stage numbers during parsing (Step 2)
 - Automatically migrates to new workflow state
 - Presents clear explanation to user
@@ -177,7 +177,7 @@ Handles legacy handoffs with Stage 4 or Stage 5 references:
 
 **Outbound (Skill delegation):**
 
-1. `plugin-workflow` - For workflow resume at specific stage (Stages 0-4)
+1. `plugin-workflow` - For workflow resume at specific stage (Stages 0-3)
 2. `plugin-ideation` - For ideation resume (improvements or refinement)
 3. `ui-mockup` - For mockup iteration resume
 4. `plugin-improve` - For improvement implementation resume
