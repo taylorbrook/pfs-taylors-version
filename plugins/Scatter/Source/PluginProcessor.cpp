@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <cmath>
 
 juce::AudioProcessorValueTreeState::ParameterLayout ScatterAudioProcessor::createParameterLayout()
 {
@@ -368,4 +369,74 @@ void ScatterAudioProcessor::processGrainVoices(juce::AudioBuffer<float>& buffer)
             }
         }
     }
+}
+
+// ============================================================================
+// Phase 3.2: Pitch Shifting + Scale Quantization Helper Methods
+// ============================================================================
+
+void ScatterAudioProcessor::initializeScaleTables()
+{
+    // Scale 0: Chromatic (all 12 semitones - no quantization)
+    scaleIntervals[0] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+
+    // Scale 1: Major scale (Ionian mode)
+    scaleIntervals[1] = {0, 2, 4, 5, 7, 9, 11};
+
+    // Scale 2: Natural Minor scale (Aeolian mode)
+    scaleIntervals[2] = {0, 2, 3, 5, 7, 8, 10};
+
+    // Scale 3: Pentatonic scale (Major pentatonic)
+    scaleIntervals[3] = {0, 2, 4, 7, 9};
+
+    // Scale 4: Blues scale
+    scaleIntervals[4] = {0, 3, 5, 6, 7, 10};
+}
+
+int ScatterAudioProcessor::quantizePitchToScale(float pitchSemitones, int scaleIndex, int rootNote)
+{
+    // Clamp scale index to valid range
+    scaleIndex = juce::jlimit(0, numScales - 1, scaleIndex);
+
+    // Clamp root note to valid range (0-11 semitones)
+    rootNote = juce::jlimit(0, 11, rootNote);
+
+    // Get the selected scale intervals
+    const auto& scale = scaleIntervals[scaleIndex];
+
+    // Round pitch to nearest semitone
+    int pitchInt = static_cast<int>(std::round(pitchSemitones));
+
+    // Extract octave and note within octave
+    int octave = pitchInt / 12;
+    int semitone = pitchInt % 12;
+
+    // Handle negative semitones (wrap to positive octave)
+    if (semitone < 0)
+    {
+        semitone += 12;
+        octave -= 1;
+    }
+
+    // Find nearest scale degree to the semitone
+    int nearestScaleDegree = scale[0];
+    int minDistance = std::abs(semitone - scale[0]);
+
+    for (int scaleDegree : scale)
+    {
+        int distance = std::abs(semitone - scaleDegree);
+        if (distance < minDistance)
+        {
+            minDistance = distance;
+            nearestScaleDegree = scaleDegree;
+        }
+    }
+
+    // Reconstruct quantized pitch: octave + scale degree + root transposition
+    int quantizedPitch = (octave * 12) + nearestScaleDegree + rootNote;
+
+    // Clamp to ±12 semitones (prevent extreme playback rates)
+    quantizedPitch = juce::jlimit(-12, 12, quantizedPitch);
+
+    return quantizedPitch;
 }
