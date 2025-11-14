@@ -1,5 +1,8 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
+#include <array>
+#include <vector>
 
 class ScatterAudioProcessor : public juce::AudioProcessor
 {
@@ -33,6 +36,47 @@ public:
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+
+    // Phase 3.1: Core Granular Engine Components
+
+    // Grain voice structure
+    struct GrainVoice
+    {
+        float readPosition = 0.0f;      // Position in delay buffer (fractional samples)
+        float windowPosition = 0.0f;    // Position in window envelope (0.0-1.0)
+        int grainSizeSamples = 0;       // Duration of this grain in samples
+        bool active = false;            // Is this voice currently playing?
+
+        // Phase 3.1: No pitch shift, no pan, no reverse (forward playback only)
+    };
+
+    // DSP components (declare BEFORE parameters for initialization order)
+    juce::dsp::ProcessSpec spec;
+
+    // Granular delay buffer (Lagrange3rd interpolation for future pitch shifting)
+    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayBuffer;
+
+    // Grain voice pool (64 pre-allocated voices)
+    static constexpr int maxGrainVoices = 64;
+    std::array<GrainVoice, maxGrainVoices> grainVoices;
+
+    // Grain scheduler state
+    int grainSpawnCounter = 0;         // Sample counter for grain spawning
+    int lastGrainSpawnInterval = 0;    // Cached spawn interval
+
+    // Window function lookup table (Hann window)
+    std::vector<float> hannWindow;
+    int windowTableSize = 0;
+
+    // Sample rate tracking
+    double currentSampleRate = 44100.0;
+    int currentDelayBufferSize = 0;
+
+    // Helper methods
+    void spawnNewGrain(float grainSizeMs);
+    void updateGrainScheduler(float densityPercent, float grainSizeMs);
+    void processGrainVoices(juce::AudioBuffer<float>& buffer);
+    void generateHannWindow(int sizeInSamples);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ScatterAudioProcessor)
 };
