@@ -131,7 +131,7 @@ This provides context and links findings to the knowledge base.
 }
 ```
 
-### Stage 1: Planning Validation
+### Stage 0: Planning Validation
 
 **Expected Inputs:**
 
@@ -702,23 +702,23 @@ Validate Stage N completion for [PluginName].
 Return JSON validation report with status, checks, and recommendation.
 ```
 
-## Example Invocation (Stage 1)
+## Example Invocation (Stage 0)
 
 ```
-Validate Stage 1 completion for TestPlugin.
+Validate Stage 0 completion for TestPlugin.
 
-**Stage:** 1
+**Stage:** 0
 **Plugin:** TestPlugin
 **Contracts:**
 - parameter-spec.md: [content here]
 - architecture.md: [content here]
 - plan.md: [content here]
 
-**Expected outputs for Stage 1:**
+**Expected outputs for Stage 0:**
 - plan.md exists with complexity score
 - All contracts referenced in plan
 - Phase breakdown if complexity ≥3
-- Stage breakdown includes all 7 stages
+- Stage breakdown includes all stages
 
 Return JSON validation report with status, checks, and recommendation.
 ```

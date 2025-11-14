@@ -1,13 +1,13 @@
 ---
 name: implement
-description: Build plugin through implementation stages 2-4
+description: Build plugin through implementation stages 1-3
 argument-hint: [PluginName?]
 allowed-tools: Bash(test:*)
 ---
 
 # /implement
 
-When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to build the plugin (stages 2-4 only).
+When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to build the plugin (stages 1-3 only).
 
 <prerequisite>
   Planning (Stage 0) must be completed first via `/plan` command.
@@ -18,10 +18,10 @@ When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to b
 <preconditions enforcement="blocking">
   <decision_gate type="status_verification" source="PLUGINS.md">
     <allowed_state status="🚧 Stage 0" description="Planning complete">
-      Start implementation at Stage 2
+      Start implementation at Stage 1
     </allowed_state>
 
-    <allowed_state status="🚧 Stage 2-4" description="In progress">
+    <allowed_state status="🚧 Stage 1-3" description="In progress">
       Resume implementation at current stage
     </allowed_state>
 
@@ -33,7 +33,7 @@ When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to b
         - Creates architecture.md (DSP specification)
         - Creates plan.md (implementation strategy)
 
-        Then run /implement to build (stages 2-4).
+        Then run /implement to build (stages 1-3).
       </error_message>
     </blocked_state>
 
@@ -49,7 +49,7 @@ When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to b
   <decision_gate type="contract_verification" blocking="true">
     <required_contracts>
       <contract path="plugins/${PLUGIN_NAME}/.ideas/architecture.md" created_by="Stage 0"/>
-      <contract path="plugins/${PLUGIN_NAME}/.ideas/plan.md" created_by="Stage 1"/>
+      <contract path="plugins/${PLUGIN_NAME}/.ideas/plan.md" created_by="Stage 0"/>
       <contract path="plugins/${PLUGIN_NAME}/.ideas/parameter-spec.md" created_by="ideation"/>
     </required_contracts>
 
@@ -76,7 +76,7 @@ When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to b
         HOW TO UNBLOCK:
         1. Run: /plan [PluginName]
            - Completes Stage 0 (Research) → architecture.md
-           - Completes Stage 1 (Planning) → plan.md
+           - Completes Stage 0 (Planning) → plan.md
 
         2. If parameter-spec.md missing:
            - Run: /dream [PluginName]
@@ -92,7 +92,7 @@ When user runs `/implement [PluginName?]`, invoke the plugin-workflow skill to b
 ## Behavior
 
 **If no plugin name provided:**
-1. Read PLUGINS.md and filter for plugins with status 🚧 Stage 1 or 🚧 Stage 2-6
+1. Read PLUGINS.md and filter for plugins with status 🚧 Stage 0 or 🚧 Stage 1-4
 2. Present numbered menu of eligible plugins with current stage
 3. Wait for user selection
 
@@ -225,7 +225,7 @@ Why this approach:
 If implementing status checks in bash/scripts, use the `getPluginStatus()` and `validateRegistryConsistency()` functions from `.claude/skills/plugin-workflow/references/state-management.md` to ensure accurate parsing and detect drift.
 
 **Skill invocation:**
-Invoke the plugin-workflow skill with the plugin name and starting stage. The skill handles stages 2-6 implementation using the subagent dispatcher pattern.
+Invoke the plugin-workflow skill with the plugin name and starting stage. The skill handles stages 1-4 implementation using the subagent dispatcher pattern.
 
 ## The Implementation Stages
 
@@ -238,9 +238,9 @@ Invoke the plugin-workflow skill with the plugin name and starting stage. The sk
   </command_responsibility>
 
   <skill_responsibility ref="plugin-workflow">
-    The plugin-workflow skill orchestrates stages 2-6:
+    The plugin-workflow skill orchestrates stages 1-4:
 
-    Stage 2 (Foundation) → Stage 3 (Shell) → Stage 4 (DSP) → Stage 5 (GUI) → Stage 6 (Validation)
+    Stage 1 (Foundation) → Stage 2 (DSP) → Stage 3 (GUI) → Stage 4 (Validation)
 
     Each stage uses specialized subagent, follows checkpoint protocol (commit, state update, decision menu).
 

@@ -1,16 +1,16 @@
 ---
 name: dsp-agent
-description: Implement audio processing and DSP algorithms for Stage 2. Use PROACTIVELY after foundation-shell-agent completes Stage 1, or when user requests DSP implementation, audio processing, or processBlock implementation.
+description: Implement audio processing and DSP algorithms for Stage 3. Use PROACTIVELY after foundation-shell-agent completes Stage 2, or when user requests DSP implementation, audio processing, or processBlock implementation.
 tools: Read, Edit, Write, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: sonnet
 color: yellow
 ---
 
-# DSP Agent - Stage 2 Audio Processing Implementation
+# DSP Agent - Stage 4 Audio Processing Implementation
 
 **Role:** Autonomous subagent responsible for implementing audio processing algorithms and DSP components according to architecture.md.
 
-**Context:** You are invoked by the plugin-workflow skill after Stage 1 (foundation) completes. You run in a fresh context with complete specifications provided.
+**Context:** You are invoked by the plugin-workflow skill after Stage 3 (shell) completes. You run in a fresh context with complete specifications provided.
 
 <model_selection>
 ## Model Selection
@@ -36,7 +36,7 @@ Before starting DSP implementation, verify these conditions are met:
 1. **architecture.md exists** - Contains DSP component specifications and processing chain
 2. **parameter-spec.md exists** - Defines all parameters and their DSP mappings
 3. **plan.md exists** - Contains complexity score and phase breakdown (if complex)
-4. **Stage 1 complete** - APVTS parameters implemented in foundation
+4. **Stage 3 complete** - APVTS parameters implemented in shell
 
 **If any precondition fails:**
 ```json
@@ -150,7 +150,7 @@ The orchestrator no longer embeds this content in your prompt - you are responsi
 
 This file contains non-negotiable JUCE 8 patterns that prevent repeat mistakes. Verify your implementation matches these patterns BEFORE generating code.
 
-**Key patterns for Stage 2:**
+**Key patterns for Stage 3:**
 1. Use individual module headers (`#include <juce_dsp/juce_dsp.h>`, etc.)
 2. NEVER call audio processing code from UI thread (use APVTS for communication)
 3. Effects need input+output buses, instruments need output-only bus
@@ -560,7 +560,7 @@ Update the YAML frontmatter fields:
 ```yaml
 ---
 plugin: [PluginName]
-stage: 2
+stage: 3
 phase: null
 status: complete
 last_updated: [YYYY-MM-DD]
@@ -568,7 +568,7 @@ complexity_score: [from plan.md]
 phased_implementation: [from plan.md]
 orchestration_mode: true
 next_action: invoke_gui_agent
-next_phase: [3.1 if phased, else null]
+next_phase: [4.1 if phased, else null]
 contract_checksums:
   creative_brief: sha256:[hash]
   parameter_spec: sha256:[hash]
@@ -589,16 +589,16 @@ Update both locations atomically:
 
 **Registry table:**
 ```markdown
-| PluginName | 🚧 Stage 2 | 1.0.0 | [YYYY-MM-DD] |
+| PluginName | 🚧 Stage 3 | 1.0.0 | [YYYY-MM-DD] |
 ```
 
 **Full entry:**
 ```markdown
 ### PluginName
-**Status:** 🚧 Stage 2
+**Status:** 🚧 Stage 3
 ...
 **Lifecycle Timeline:**
-- **[YYYY-MM-DD] (Stage 2):** Audio Engine Working - DSP implementation complete
+- **[YYYY-MM-DD] (Stage 3):** Audio Engine Working - DSP implementation complete
 
 **Last Updated:** [YYYY-MM-DD]
 ```
@@ -726,7 +726,7 @@ See `.claude/schemas/README.md` for validation details.
 ```
 
 **Note:** plugin-workflow will receive this report and handle:
-- Git commit with message: `feat: [Plugin] Stage 2.1 - core DSP`
+- Git commit with message: `feat: [Plugin] Stage 4.1 - core DSP`
 - Update plan.md with phase completion timestamp
 - Present decision menu to user
 
@@ -766,7 +766,7 @@ See `.claude/schemas/README.md` for validation details.
     "failed_at_phase": "4.2" // If phased
   },
   "issues": [
-    "Stage 2 failed: [specific reason]",
+    "Stage 4 failed: [specific reason]",
     "See build log or code for details"
   ],
   "ready_for_next_stage": false
@@ -862,16 +862,16 @@ See `.claude/schemas/README.md` for validation details.
 <next_stage>
 ## Next Stage
 
-After Stage 2 succeeds:
+After Stage 4 succeeds:
 
 1. **Auto-invoke plugin-testing skill** (5 automated tests)
 2. **If tests FAIL:** STOP, show results, wait for fixes
-3. **If tests PASS:** Continue to Stage 3 (gui-agent for WebView UI)
+3. **If tests PASS:** Continue to Stage 5 (gui-agent for WebView UI)
 
 The plugin now has:
 
-- ✅ Build system (Stage 1)
-- ✅ Parameter system (Stage 1)
-- ✅ Audio processing (Stage 2)
-- ⏳ UI integration (Stage 3 - next)
+- ✅ Build system (Stage 2)
+- ✅ Parameter system (Stage 3)
+- ✅ Audio processing (Stage 4)
+- ⏳ UI integration (Stage 5 - next)
 </next_stage>

@@ -85,7 +85,7 @@ def main():
         print("No stage information found in .continue-here.md", file=sys.stderr)
         return 0
 
-    if stage < 2 or stage > 5:
+    if stage < 1 or stage > 4:
         print(f"Stage {stage}: Contract immutability not required", file=sys.stderr)
         return 0
 
@@ -97,7 +97,7 @@ def main():
 
     if not stored_checksums:
         print("WARNING: No contract checksums found in .continue-here.md", file=sys.stderr)
-        print("Checksums should be calculated at Stage 1 completion", file=sys.stderr)
+        print("Checksums should be calculated at Stage 0 completion", file=sys.stderr)
         return 2  # Warning level
 
     # Verify checksums

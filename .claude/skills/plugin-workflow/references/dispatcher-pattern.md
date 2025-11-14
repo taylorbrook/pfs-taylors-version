@@ -16,39 +16,32 @@ async function dispatchStage(pluginName, stageNumber) {
     return { status: 'blocked', reason: preconditionCheck.reason }
   }
 
-  // ALWAYS invoke subagents via Task tool for stages 2-5
+  // ALWAYS invoke subagents via Task tool for stages 1-4
   switch(stageNumber) {
-    case 2:
+    case 1:
       // Invoke foundation-agent subagent
       return await invokeSubagent('foundation-agent', {
         pluginName,
         contracts: loadContracts(pluginName),
         requiredReading: 'juce8-critical-patterns.md'
       })
-    case 3:
-      // Invoke shell-agent subagent
-      return await invokeSubagent('shell-agent', {
-        pluginName,
-        contracts: loadContracts(pluginName),
-        requiredReading: 'juce8-critical-patterns.md'
-      })
-    case 4:
+    case 2:
       // Invoke dsp-agent subagent
       return await invokeSubagent('dsp-agent', {
         pluginName,
         contracts: loadContracts(pluginName),
         requiredReading: 'juce8-critical-patterns.md'
       })
-    case 5:
+    case 3:
       // Invoke gui-agent subagent
       return await invokeSubagent('gui-agent', {
         pluginName,
         contracts: loadContracts(pluginName),
         requiredReading: 'juce8-critical-patterns.md'
       })
-    case 6:
+    case 4:
       // Can run directly or invoke validator subagent
-      return executeStage6Validation(pluginName)  // See references/stage-6-validation.md
+      return executeStage4Validation(pluginName)  // See references/stage-4-validation.md
     default:
       return { status: 'error', reason: `Invalid stage: ${stageNumber}` }
   }
@@ -57,10 +50,10 @@ async function dispatchStage(pluginName, stageNumber) {
 
 ## Key Principles
 
-1. **Always delegate stages 2-5** - Use Task tool to invoke subagents
+1. **Always delegate stages 1-4** - Use Task tool to invoke subagents
 2. **Pass contracts and Required Reading** - Every subagent receives architecture.md, plan.md, and juce8-critical-patterns.md
 3. **Check preconditions first** - Validate contracts exist before dispatching
-4. **Stage 6 flexibility** - Can run directly in orchestrator or via validator subagent
+4. **Stage 4 flexibility** - Can run directly in orchestrator or via validator subagent
 
 ## Integration
 

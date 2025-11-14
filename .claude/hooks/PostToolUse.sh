@@ -25,8 +25,8 @@ if [[ "$FILE_PATH" =~ plugins/([^/]+)/.ideas/(creative-brief|parameter-spec|arch
     # Extract current stage
     STAGE=$(grep -E '^stage:' "$PLUGIN_PATH/.continue-here.md" | head -1 | sed 's/stage: *//')
 
-    # Block if in implementation stages (2-5)
-    if [[ "$STAGE" =~ ^[2-5]$ ]]; then
+    # Block if in implementation stages (1-4)
+    if [[ "$STAGE" =~ ^[1-4]$ ]]; then
       CONTRACT_FILE=$(basename "$FILE_PATH")
       echo "" >&2
       echo "❌ CONTRACT IMMUTABILITY VIOLATION" >&2

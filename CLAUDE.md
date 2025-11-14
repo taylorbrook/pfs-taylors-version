@@ -63,14 +63,14 @@ When these terms appear in the system, the plain-language equivalent will be sho
 ## Key Principles
 
 1. **Contracts are immutable during implementation** - All stages reference the same specs (zero drift)
-   - Technical enforcement via PostToolUse hook (blocks Edit/Write to contract files during Stages 2-4)
+   - Technical enforcement via PostToolUse hook (blocks Edit/Write to contract files during Stages 1-3)
    - Checksum validation in SubagentStop hook (detects unauthorized modifications)
    - Cross-contract consistency validation (parameter counts, DSP components, complexity scores)
 2. **Dispatcher pattern** - Each subagent runs in fresh context (no accumulation)
 3. **Discovery through play** - Features found via slash command autocomplete and decision menus
 4. **Instructed routing** - Commands expand to prompts, Claude invokes skills
 5. **Required Reading injection** - Critical patterns (`juce8-critical-patterns.md`) are mandatory reading for all subagents to prevent repeat mistakes
-6. **Proactive validation** - Errors caught early (dependencies at start, brief sync before Stage 2, silent failures at compile-time)
+6. **Proactive validation** - Errors caught early (dependencies at start, brief sync before Stage 1, silent failures at compile-time)
 
 ## Proactive Validation (Error Prevention)
 
@@ -90,14 +90,14 @@ The system prevents late-stage failures through multi-layer validation:
 
 **During Implementation (PostToolUse hook):**
 
-- Contract immutability enforcement (blocks modifications to .ideas/\*.md during Stages 2-4)
+- Contract immutability enforcement (blocks modifications to .ideas/\*.md during Stages 1-3)
 - Real-time safety checks (processBlock validation)
 - Silent failure pattern detection (12+ known patterns from juce8-critical-patterns.md)
 - Blocks commits with patterns that compile but fail at runtime
 
 **After Subagent Completion (SubagentStop hook):**
 
-- Contract checksum validation (verifies contracts unchanged during Stages 2-4)
+- Contract checksum validation (verifies contracts unchanged during Stages 1-3)
 - Cross-contract consistency checks (parameter counts, DSP components, references)
 - Stage-specific deterministic validation (foundation-shell, DSP, GUI)
 

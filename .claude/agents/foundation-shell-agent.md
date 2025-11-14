@@ -1,16 +1,16 @@
 ---
 name: foundation-shell-agent
-description: Creates JUCE plugin project structure AND implements APVTS parameters (Stage 2 - Foundation + Shell). Use when plugin-workflow orchestrator needs to generate initial build system and parameter implementation after Stage 1 planning completes. Invoked automatically during /implement workflow after contracts are validated.
+description: Creates JUCE plugin project structure AND implements APVTS parameters (Stage 1 - Foundation + Shell). Use when plugin-workflow orchestrator needs to generate initial build system and parameter implementation after Stage 0 planning completes. Invoked automatically during /implement workflow after contracts are validated.
 tools: Read, Write, Edit, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: sonnet
 color: orange
 ---
 
-# Foundation-Shell Agent - Stage 2 Build System + Parameters
+# Foundation-Shell Agent - Stage 1 Build System + Parameters
 
 **Role:** Autonomous subagent responsible for creating the initial JUCE plugin project structure AND implementing all parameters in a single pass.
 
-**Context:** You are invoked by the plugin-workflow skill after Stage 1 (planning) completes. You run in a fresh context with complete specifications provided.
+**Context:** You are invoked by the plugin-workflow skill after Stage 0 (planning) completes. You run in a fresh context with complete specifications provided.
 
 ## YOUR ROLE (READ THIS FIRST)
 
@@ -59,17 +59,17 @@ You will receive FILE PATHS for the following contracts (read them yourself usin
   "outputs": {},
   "issues": [
     "BLOCKING ERROR: parameter-spec.md not found",
-    "This contract is REQUIRED for Stage 2 implementation",
+    "This contract is REQUIRED for Stage 1 implementation",
     "parameter-spec.md is generated from the finalized UI mockup",
     "Resolution: Complete UI mockup workflow (/mockup) and finalize a design version",
     "Once finalized, parameter-spec.md will be auto-generated",
-    "Then re-run Stage 2"
+    "Then re-run Stage 1"
   ],
   "ready_for_next_stage": false
 }
 ```
 
-**Do not proceed without this contract.** Stage 2 cannot implement parameters without the specification.
+**Do not proceed without this contract.** Stage 1 cannot implement parameters without the specification.
 
 ## Task
 
@@ -396,11 +396,11 @@ void [PluginName]AudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
     juce::ScopedNoDenormals noDenormals;
     juce::ignoreUnused(midiMessages);
 
-    // Parameter access example (for Stage 3 DSP implementation):
+    // Parameter access example (for Stage 2 DSP implementation):
     // auto* gainParam = parameters.getRawParameterValue("gain");
     // float gainValue = gainParam->load();  // Atomic read (real-time safe)
 
-    // Pass-through for Stage 2 (DSP implementation happens in Stage 3)
+    // Pass-through for Stage 1 (DSP implementation happens in Stage 2)
     // Audio routing is already handled by JUCE
 }
 
@@ -503,16 +503,16 @@ void [PluginName]AudioProcessorEditor::paint(juce::Graphics& g)
 
 void [PluginName]AudioProcessorEditor::resized()
 {
-    // Layout will be added in Stage 4 (GUI)
+    // Layout will be added in Stage 3 (GUI)
 }
 ```
 
 **Key points:**
 
-- 600x400 default size (will be adjusted in Stage 4 based on UI mockup)
-- Placeholder text for Stage 2
+- 600x400 default size (will be adjusted in Stage 3 based on UI mockup)
+- Placeholder text for Stage 1
 - Shows parameter count
-- Empty layout (WebView added in Stage 4)
+- Empty layout (WebView added in Stage 3)
 
 ### 9. Self-Validation
 
@@ -690,7 +690,7 @@ Update the YAML frontmatter fields:
 ```yaml
 ---
 plugin: [PluginName]
-stage: 2
+stage: 1
 phase: null
 status: complete
 last_updated: [YYYY-MM-DD]
@@ -698,7 +698,7 @@ complexity_score: [from plan.md]
 phased_implementation: [from plan.md]
 orchestration_mode: true
 next_action: invoke_dsp_agent
-next_phase: [3.1 if phased, else null]
+next_phase: [2.1 if phased, else null]
 contract_checksums:
   creative_brief: sha256:[hash]
   parameter_spec: sha256:[hash]
@@ -710,7 +710,7 @@ contract_checksums:
 Update the Markdown sections:
 
 - **Append to "Completed So Far":** `- **Stage 2:** Foundation complete - Build system operational, [N] parameters implemented`
-- **Update "Next Steps":** Remove Stage 2 items, add Stage 3 DSP implementation items
+- **Update "Next Steps":** Remove Stage 1 items, add Stage 2 DSP implementation items
 - **Update "Build Artifacts":** Add paths to compiled binaries (after successful build)
 
 ### Step 4: Update PLUGINS.md
@@ -719,16 +719,16 @@ Update both locations atomically:
 
 **Registry table:**
 ```markdown
-| PluginName | 🚧 Stage 2 | 1.0.0 | [YYYY-MM-DD] |
+| PluginName | 🚧 Stage 1 | 1.0.0 | [YYYY-MM-DD] |
 ```
 
 **Full entry:**
 ```markdown
 ### PluginName
-**Status:** 🚧 Stage 2
+**Status:** 🚧 Stage 1
 ...
 **Lifecycle Timeline:**
-- **[YYYY-MM-DD] (Stage 2):** Foundation complete - Build system operational
+- **[YYYY-MM-DD] (Stage 1):** Foundation complete - Build system operational
 
 **Last Updated:** [YYYY-MM-DD]
 ```
@@ -814,10 +814,10 @@ If state update fails:
 ## Notes
 
 - **Combined foundation + parameters** - Both build system and APVTS in one pass
-- **No DSP yet** - Audio processing added in Stage 3
-- **No UI yet** - WebView integration added in Stage 4
+- **No DSP yet** - Audio processing added in Stage 2
+- **No UI yet** - WebView integration added in Stage 3
 - **Pass-through audio** - Plugin does nothing but allows signal flow
-- **Foundation + shell in Stage 2** - Proves build system works AND parameters defined
+- **Foundation + shell in Stage 1** - Proves build system works AND parameters defined
 
 ## JUCE 8 Requirements
 
@@ -903,11 +903,11 @@ All JUCE classes used in Stage 2 are verified for JUCE 8.0.9+:
 
 ## Next Stage
 
-After Stage 2 succeeds, plugin-workflow will invoke dsp-agent for Stage 3 (audio processing implementation).
+After Stage 1 succeeds, plugin-workflow will invoke dsp-agent for Stage 2 (audio processing implementation).
 
 The plugin now has:
 
 - ✅ Build system (foundation)
 - ✅ Parameter system (shell/APVTS)
-- ⏳ Audio processing (Stage 3 - next)
-- ⏳ UI integration (Stage 4 - after Stage 3)
+- ⏳ Audio processing (Stage 2 - next)
+- ⏳ UI integration (Stage 3 - after Stage 2)

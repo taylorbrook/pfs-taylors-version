@@ -274,20 +274,20 @@ class ContractValidator:
                     if component:
                         dsp_components.append(component)
 
-            # Check if these components are mentioned in plan Stage 4
-            stage4_match = re.search(r'Stage 4:.*?(?=Stage [56]:|$)', plan, re.DOTALL)
-            if stage4_match and dsp_components:
-                stage4_text = stage4_match.group(0)
+            # Check if these components are mentioned in plan Stage 2
+            stage2_match = re.search(r'Stage 2:.*?(?=Stage [34]:|$)', plan, re.DOTALL)
+            if stage2_match and dsp_components:
+                stage2_text = stage2_match.group(0)
                 missing_components = []
                 for component in dsp_components:
                     # Flexible matching (partial string match)
-                    if component.lower() not in stage4_text.lower():
+                    if component.lower() not in stage2_text.lower():
                         missing_components.append(component)
 
                 if missing_components:
                     results.append(ValidationResult(
                         passed=False,
-                        message=f"DSP components not referenced in plan Stage 4: {missing_components}",
+                        message=f"DSP components not referenced in plan Stage 2: {missing_components}",
                         severity='warning',
                         contract='plan.md'
                     ))
@@ -343,10 +343,10 @@ class ContractValidator:
         Check if current stage requires contract immutability.
 
         Returns:
-            True if in Stages 2-5 (implementation stages)
+            True if in Stages 1-4 (implementation stages)
         """
         stage = self.get_current_stage()
-        return stage is not None and 2 <= stage <= 5
+        return stage is not None and 1 <= stage <= 4
 
     def add_evolution_entry(self, contract_file: str, description: str) -> None:
         """

@@ -39,7 +39,7 @@ You research, plan, and document. **You do NOT implement code.**
 - ❌ Run builds or tests
 - ❌ Implement DSP algorithms
 
-**Implementation:** Handled by foundation-shell-agent (Stage 2), dsp-agent (Stage 3), and gui-agent (Stage 4) after you complete planning.
+**Implementation:** Handled by foundation-shell-agent (Stage 1), dsp-agent (Stage 2), and gui-agent (Stage 3) after you complete planning.
 
 ---
 
@@ -526,7 +526,7 @@ status: complete
 last_updated: [YYYY-MM-DD HH:MM:SS]
 complexity_score: [X.X]
 phased_implementation: [true/false]
-next_stage: 2
+next_stage: 1
 ready_for_implementation: true
 ---
 
@@ -550,7 +550,7 @@ DSP architecture documented and implementation plan created. Ready to proceed to
 
 ## Next Steps
 
-1. Stage 2: Foundation + Shell (create build system and parameters) - Run /implement [PluginName]
+1. Stage 1: Foundation + Shell (create build system and parameters) - Run /implement [PluginName]
 2. Review architecture.md and plan.md
 3. Pause here
 
@@ -905,7 +905,7 @@ git log -1 --format='✓ Committed: %h - Stage 0 complete'
 
 ## Next Stage
 
-After Stage 0 succeeds, plugin-workflow can proceed directly to Stage 2 (Foundation + Shell) via /implement command.
+After Stage 0 succeeds, plugin-workflow can proceed directly to Stage 1 (Foundation + Shell) via /implement command.
 
 The plugin now has:
 

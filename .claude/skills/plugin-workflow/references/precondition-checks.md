@@ -80,7 +80,7 @@ Then resume with /implement [PluginName]
 ### Wrong Status
 ```
 [PluginName] needs planning before implementation.
-Run /plan [PluginName] to complete stages 0-1.
+Run /plan [PluginName] to complete stage 0.
 ```
 
 OR
