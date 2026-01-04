@@ -1,23 +1,12 @@
+#VST building system based upon **[TÂCHES](https://youtube.com/tachesteaches)**
+
 # Plugin Freedom System
 
 An AI-assisted JUCE plugin development system that enables conversational creation of professional VST3 and AU audio plugins for macOS. Design and build custom audio processors through natural dialogue with Claude Code—no programming experience required.
 
-**Created by [TÂCHES](https://youtube.com/tachesteaches)**
-
-[![Watch the Demo](https://img.shields.io/badge/▶_Watch_Demo-1.45hr_walkthrough-red?style=for-the-badge&logo=youtube)](https://youtu.be/RsZB1K8oH0c)
-
 ## Why This Exists
 
-Traditional plugin development demands deep expertise in C++, DSP algorithms, and the JUCE framework. This barrier keeps plugin creation restricted to experienced programmers, leaving musicians, producers, and sound designers dependent on commercial tools.
-
-The Plugin Freedom System removes that barrier entirely.
-
-By enabling conversational plugin development, this system:
-
-- **Democratizes creation**: Anyone with an idea can build it, regardless of technical background
-- **Prioritizes creativity**: Focus on sonic goals and UX, not implementation details
-- **Accelerates iteration**: Ideas become working plugins in hours, not weeks
-- **Removes gatekeeping**: Opens audio software development to the people who actually use these tools
+To make the development of VST and AU plugins using Claude Code more achievable.
 
 ## What You Can Build
 
